@@ -2,19 +2,22 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-// import session = require('express-session');
 import passport from 'passport';
+import path from 'path';
 import './config/passport';
 import authRoutes from './routes/auth.routes';
+
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-// app.use(session({ secret: 'secret', resave: false, saveUninitialized: false }));
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.initialize()); // Initialize passport but NO sessions
+
+// Serve static files (like index.html) from the project root directory
+// __dirname is auth/src, so ../../ points to the futureflowBE directory
+app.use(express.static(path.resolve(__dirname, '../../')));
 
 app.use('/auth', authRoutes);
 

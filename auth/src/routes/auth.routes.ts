@@ -1,32 +1,25 @@
-import { Router } from 'express';
-import passport from 'passport';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import { authenticateJWT } from '../middleware/authMiddleware';
 import express from 'express';
-
-
-dotenv.config();
+import passport from 'passport';
+import authController from '../controllers/auth.controller';
 
 const router = express.Router();
 
+// Local authentication routes
+router.post('/register', authController.register as express.RequestHandler);
+router.post('/login', authController.login as express.RequestHandler);
+
+// Google OAuth routes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
-  const user = req.user as any;
-  
-  const token = jwt.sign(
-    { id: user._id, email: user.email, name: user.name },
-    process.env.JWT_SECRET!,
-    { expiresIn: '1d' }
-  );
-
-  // You can send token directly or redirect with token in query
-  // For example, redirect to frontend with token:
-  res.redirect(`${process.env.CLIENT_URL}?token=${token}`);
-});
-router.get('/profile', authenticateJWT, (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  res.json({ user: (req as any).user });
-});
+router.get(
+  '/google/callback',
+  passport.authenticate('google', { 
+    session: false, 
+    failureRedirect: '/index.html?error=google_authentication_failed' // Redirect to index.html with error
+  }),
+  // authController.googleCallback is responsible for handling the user profile from Google,
+  // generating a JWT, and then redirecting to: /index.html?token=YOUR_GENERATED_TOKEN
+  authController.googleCallback
+);
 
 export default router;
