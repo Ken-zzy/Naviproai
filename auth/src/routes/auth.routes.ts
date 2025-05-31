@@ -10,7 +10,10 @@ router.post('/register', authController.register as express.RequestHandler);
 router.post('/login', authController.login as express.RequestHandler);
 
 // Google OAuth routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', passport.authenticate('google', { 
+  scope: ['profile', 'email'],
+  prompt: 'select_account' // Add this line
+}));
 
 router.get(
   '/google/callback',
