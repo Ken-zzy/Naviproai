@@ -16,4 +16,7 @@ const UserSchema = new Schema<IUser>({
   timestamps: true
 });
 
-export default mongoose.model<IUser>('User', UserSchema);
+// Fix OverwriteModelError by checking if model exists before defining it
+const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+
+export default User;

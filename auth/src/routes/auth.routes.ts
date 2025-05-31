@@ -1,5 +1,6 @@
 import express from 'express';
 import passport from 'passport';
+import { authenticateJWT } from '../middleware/authMiddleware';
 import authController from '../controllers/auth.controller';
 
 const router = express.Router();
@@ -21,5 +22,10 @@ router.get(
   // generating a JWT, and then redirecting to: /index.html?token=YOUR_GENERATED_TOKEN
   authController.googleCallback
 );
+
+// Protected routes
+router.get('/profile', authenticateJWT, authController.getUserProfile as express.RequestHandler);
+router.post('/change-password', authenticateJWT, authController.changePassword as express.RequestHandler);
+
 
 export default router;
