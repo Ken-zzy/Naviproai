@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model';
 import { Document } from 'mongoose';
-import { IUser } from '../models/user.model';
+import { RequestWithAuth } from '../middleware/authMiddleware'; // Assuming this was added in a previous step
+import { IUser } from '../models/user.model'; // Assuming this was added in a previous step
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -65,8 +66,58 @@ const googleCallback = (req: Request, res: Response): void => {
   }
 };
 
+// Assuming getUserProfile was added in a previous step
+const getUserProfile = async (req: RequestWithAuth, res: Response) => {
+  try {
+    if (!req.auth || !req.auth.userId) {
+      return res.status(401).json({ error: 'Not authorized, user data not found in token' });
+    }
+    const user = await User.findById(req.auth.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ id: user._id, name: user.name, email: user.email });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: 'Failed to get user profile' });
+  }
+};
+
+const changePassword = async (req: RequestWithAuth, res: Response) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!req.auth || !req.auth.userId) {
+      return res.status(401).json({ error: 'Not authorized' });
+    }
+
+    const user = await User.findById(req.auth.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({ error: 'User registered with Google. Password cannot be changed here.' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Incorrect current password' });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+};
+
 export default {
   register,
   login,
   googleCallback,
+  getUserProfile, // Assuming this was added
+  changePassword,
 };
