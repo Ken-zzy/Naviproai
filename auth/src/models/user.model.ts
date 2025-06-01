@@ -5,6 +5,9 @@ export interface IUser extends Document {
   password?: string;
   googleId?: string;
   name: string; // Align with schema: name is required
+  isEmailVerified?: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -12,6 +15,9 @@ const UserSchema = new Schema<IUser>({
   password: { type: String },
   googleId: { type: String, unique: true, sparse: true },
   name: { type: String, required: true },
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationToken: { type: String },
+  emailVerificationExpires: { type: Date },
 }, {
   timestamps: true
 });

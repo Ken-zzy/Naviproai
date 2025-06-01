@@ -30,5 +30,8 @@ router.get(
 router.get('/profile', authenticateJWT, authController.getUserProfile as express.RequestHandler);
 router.post('/change-password', authenticateJWT, authController.changePassword as express.RequestHandler);
 
+// Email verification route
+router.get('/verify-email/:token', authController.verifyEmail as express.RequestHandler);
+
 
 export default router;
