@@ -45,5 +45,6 @@ router.post('/change-password', authenticateJWT, authController.changePassword a
 router.get('/verify-email/:token', authController.verifyEmail as RequestHandler);
 
 // Password Reset Routes
-router.post('/forgot-password', forgotPasswordLimiter, verifyRecaptcha as RequestHandler, authController.forgotPassword as RequestHandler);router.post('/reset-password/:token', verifyRecaptcha as RequestHandler, authController.resetPassword as RequestHandler);
+    router.post('/forgot-password', forgotPasswordLimiter, verifyRecaptcha as RequestHandler, authController.forgotPassword as RequestHandler);
+    router.post('/reset-password/:token', verifyRecaptcha as RequestHandler, authController.resetPassword as RequestHandler);
 export default router;
