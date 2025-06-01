@@ -1,8 +1,9 @@
-import express from 'express';
+import express, { RequestHandler } from 'express'; // Import RequestHandler
 import passport from 'passport';
-import { authenticateJWT } from '../middleware/authMiddleware';
+import { authenticateJWT } from '../middleware/authMiddleware'; // Assuming this middleware exists and is compatible
 import authController from '../controllers/auth.controller';
 import rateLimit from 'express-rate-limit';
+import { verifyRecaptcha } from '../middleware/recaptcha.middleware'; // Import the reCAPTCHA middleware
 
 const router = express.Router();
 
@@ -16,8 +17,8 @@ const forgotPasswordLimiter = rateLimit({
 });
 
 // Local authentication routes
-router.post('/register', authController.register as express.RequestHandler);
-router.post('/login', authController.login as express.RequestHandler);
+router.post('/register', verifyRecaptcha as RequestHandler, authController.register as RequestHandler);
+router.post('/login', verifyRecaptcha as RequestHandler, authController.login as RequestHandler);
 
 // Google OAuth routes
 router.get('/google', passport.authenticate('google', { 
@@ -33,18 +34,16 @@ router.get(
   }),
   // authController.googleCallback is responsible for handling the user profile from Google,
   // generating a JWT, and then redirecting to: /index.html?token=YOUR_GENERATED_TOKEN
-  authController.googleCallback
+  authController.googleCallback as RequestHandler // Cast to RequestHandler
 );
 
 // Protected routes
-router.get('/profile', authenticateJWT, authController.getUserProfile as express.RequestHandler);
-router.post('/change-password', authenticateJWT, authController.changePassword as express.RequestHandler);
+router.get('/profile', authenticateJWT, authController.getUserProfile as RequestHandler);
+router.post('/change-password', authenticateJWT, authController.changePassword as RequestHandler);
 
 // Email verification route
-router.get('/verify-email/:token', authController.verifyEmail as express.RequestHandler);
+router.get('/verify-email/:token', authController.verifyEmail as RequestHandler);
 
 // Password Reset Routes
-router.post('/forgot-password', forgotPasswordLimiter, authController.forgotPassword as express.RequestHandler);
-router.post('/reset-password/:token', authController.resetPassword as express.RequestHandler);
-
+router.post('/forgot-password', forgotPasswordLimiter, verifyRecaptcha as RequestHandler, authController.forgotPassword as RequestHandler);router.post('/reset-password/:token', verifyRecaptcha as RequestHandler, authController.resetPassword as RequestHandler);
 export default router;
