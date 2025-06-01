@@ -8,6 +8,8 @@ export interface IUser extends Document {
   isEmailVerified?: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -18,6 +20,8 @@ const UserSchema = new Schema<IUser>({
   isEmailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String },
   emailVerificationExpires: { type: Date },
+  passwordResetToken: { type: String, select: false },
+  passwordResetExpires: { type: Date, select: false },
 }, {
   timestamps: true
 });

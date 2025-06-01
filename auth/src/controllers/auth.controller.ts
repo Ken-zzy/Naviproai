@@ -6,6 +6,7 @@ import { Document } from 'mongoose';
 import crypto from 'crypto'; // For generating tokens
 // import { RequestWithAuth } from '../middleware/auth.middleware'; // Removed as this file might not exist in your setup
 import { sendEmail } from '../utils/helper'; // Import the email helper
+import { validatePassword } from '../utils/validation'; // Import password validator
 import { IUser } from '../models/user.model';
 
 const register = async (req: Request, res: Response) => {
@@ -16,6 +17,12 @@ const register = async (req: Request, res: Response) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
+    }
+
+    // Validate password strength
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
     }
     
     // Generate email verification token
@@ -141,6 +148,12 @@ const getUserProfile = async (req: Request, res: Response) => { // Changed to us
 const changePassword = async (req: Request, res: Response) => { // Changed to use standard Request
   try {
     const { currentPassword, newPassword } = req.body;
+
+    // Validate new password strength
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
+    }
     // req.user is populated by authenticateJWT middleware
     const jwtPayload = req.user as import('../../types/jwtPayload').JwtPayload;
     if (!jwtPayload || !jwtPayload.userId) {
@@ -198,6 +211,141 @@ const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
+const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Please provide an email address.' });
+    }
+
+    const user = await User.findOne({ email });
+
+    // To prevent email enumeration, always send a similar response
+    // whether the user exists or not.
+    if (!user || !user.password) { // Also check if user has a password (i.e., not Google-only user)
+      console.log(`Password reset requested for non-existent or OAuth user: ${email}`);
+      return res.status(200).json({ message: 'If your email is registered and has a password, you will receive a password reset link.' });
+    }
+
+    // 1. Generate the random reset token (this is the token sent to the user)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // 2. Hash the token and set it on the user model (store the HASHED token in DB)
+    user.passwordResetToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // 3. Set token expiration (e.g., 15 minutes)
+    user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save({ validateBeforeSave: false }); // Skip full validation if only updating these
+
+    // 4. Create reset URL and send email
+    //    The URL should point to your FRONTEND reset password page
+    const resetURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>FutureFlow Password Reset Request</h2>
+        <p>You are receiving this email because you (or someone else) have requested to reset the password for your account.</p>
+        <p>Please click the button below to reset your password. This link is valid for 15 minutes:</p>
+        <p style="text-align: center;">
+          <a href="${resetURL}"
+             style="display: inline-block;
+                    padding: 10px 20px;
+                    margin: 10px 0;
+                    font-size: 16px;
+                    color: white;
+                    background-color: #007bff;
+                    text-decoration: none;
+                    border-radius: 5px;">
+            Reset Your Password
+          </a>
+        </p>
+        <p>If the button above doesn't work, copy and paste the following link into your browser:</p>
+        <p><a href="${resetURL}">${resetURL}</a></p>
+        <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+      </div>
+    `;
+
+    const emailSent = await sendEmail({
+      to: user.email as string, // email is guaranteed by findOne
+      subject: 'Your FutureFlow Password Reset Token (Valid for 15 min)',
+      html: emailHtml,
+    });
+
+    if (!emailSent) {
+      // If email sending fails, we should ideally not leave the token in the DB,
+      // or log this for manual intervention. For simplicity, we'll clear them.
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(500).json({ error: 'Error sending password reset email. Please try again later.' });
+    }
+
+    res.status(200).json({ message: 'Password reset token sent to email.' });
+
+  } catch (error) {
+    console.error('Forgot Password Error:', error);
+    // Generic error to the client
+    res.status(500).json({ error: 'An error occurred while processing your request.' });
+  }
+};
+
+const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+    const { password: newPassword } = req.body; // Renaming for clarity
+
+    // Validate new password strength
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
+    }
+
+    // 1. Get user based on the token (hashed version) and expiry
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }, // Check if token is not expired
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Token is invalid or has expired. Please request a new one.' });
+    }
+
+    // 2. If token is valid, set the new password
+    user.password = await bcrypt.hash(newPassword, 12);
+    user.passwordResetToken = undefined; // Clear the token
+    user.passwordResetExpires = undefined; // Clear the expiry
+    await user.save();
+
+    // 3. Optionally, send a confirmation email
+    const confirmationHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>FutureFlow Password Changed Successfully</h2>
+        <p>Your password for FutureFlow has been successfully changed.</p>
+        <p>If you did not make this change, please contact our support team immediately.</p>
+      </div>
+    `;
+    await sendEmail({
+      to: user.email as string,
+      subject: 'Your FutureFlow Password Has Been Changed',
+      html: confirmationHtml,
+    });
+
+    res.status(200).json({ message: 'Password has been reset successfully.' });
+
+  } catch (error) {
+    console.error('Reset Password Error:', error);
+    res.status(500).json({ error: 'An error occurred while resetting your password.' });
+  }
+};
+
 export default {
   register,
   login,
@@ -205,4 +353,6 @@ export default {
   getUserProfile, // Assuming this was added
   changePassword,
   verifyEmail,
+  forgotPassword,
+  resetPassword,
 };

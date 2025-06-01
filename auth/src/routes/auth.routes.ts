@@ -33,5 +33,8 @@ router.post('/change-password', authenticateJWT, authController.changePassword a
 // Email verification route
 router.get('/verify-email/:token', authController.verifyEmail as express.RequestHandler);
 
+// Password Reset Routes
+router.post('/forgot-password', authController.forgotPassword as express.RequestHandler);
+router.post('/reset-password/:token', authController.resetPassword as express.RequestHandler);
 
 export default router;
