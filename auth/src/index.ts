@@ -6,14 +6,16 @@ import passport from 'passport';
 import path from 'path';
 import './config/passport';
 import authRoutes from './routes/auth.routes';
+import cors from 'cors';
 
-dotenv.config();
+dotenv.config(); 
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize()); // Initialize passport but NO sessions
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
 // Serve static files (like index.html) from the project root directory
 // __dirname is auth/src, so ../../ points to the futureflowBE directory
