@@ -4,9 +4,9 @@
   "description": "This service handles user authentication for the Future Flow application. It provides mechanisms for users to sign up, log in, and manage their sessions securely.",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only auth/src/index.ts",
     "build": "tsc",
-    "start": "node dist/auth/src/index.js"
+    "start": "node dist/auth/src/index.js",
+    "dev": "ts-node-dev auth/src/index.ts"
   },
   "repository": {
     "type": "git",

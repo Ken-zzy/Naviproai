@@ -17,9 +17,9 @@ app.use(cookieParser());
 app.use(passport.initialize()); // Initialize passport but NO sessions
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
-// Serve static files (like index.html) from the project root directory
-// __dirname is auth/src, so ../../ points to the futureflowBE directory
-app.use(express.static(path.resolve(__dirname, '../../')));
+// Serve static files from the project root directory (futureflowBE)
+// __dirname is .../auth/src, so we go up three levels.
+app.use(express.static(path.resolve(__dirname, '../../../')));
 
 app.use('/auth', authRoutes);
 
