@@ -17,9 +17,9 @@ app.use(cookieParser());
 app.use(passport.initialize()); // Initialize passport but NO sessions
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
-// Serve static files from the project root directory (futureflowBE)
-// __dirname is .../auth/src, so we go up three levels.
-app.use(express.static(path.resolve(__dirname, '../../../')));
+// Serve static files from the dedicated 'public' directory.
+// This is more secure and prevents exposing sensitive project files.
+app.use(express.static(path.resolve(__dirname, '../../../public')));
 
 app.use('/auth', authRoutes);
 
