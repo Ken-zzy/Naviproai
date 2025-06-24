@@ -24,10 +24,12 @@ const allowedOrigins = [
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
-// Serve the frontend test page and other static assets from the 'frontend' directory.
-app.use(express.static(path.resolve(__dirname, '../../frontend')));
-
 app.use('/auth', authRoutes);
+
+// 404 handler for unknown routes
+app.use((req, res, next) => {
+  res.status(404).send('Not found');
+});
 
 // Centralized error handler. This must be the last middleware.
 app.use(errorHandler);
