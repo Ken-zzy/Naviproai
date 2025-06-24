@@ -7,6 +7,7 @@ import path from 'path';
 import './config/passport';
 import authRoutes from './routes/auth.routes';
 import cors from 'cors';
+import { errorHandler } from './middleware/error.middleware';
 
 dotenv.config(); 
 
@@ -24,9 +25,12 @@ const allowedOrigins = [
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 // Serve the frontend test page and other static assets from the 'frontend' directory.
-app.use(express.static(path.resolve(__dirname, '../../../frontend')));
+app.use(express.static(path.resolve(__dirname, '../../frontend')));
 
 app.use('/auth', authRoutes);
+
+// Centralized error handler. This must be the last middleware.
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGO_URI!)
