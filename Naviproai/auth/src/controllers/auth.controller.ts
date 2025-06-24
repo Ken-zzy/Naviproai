@@ -70,7 +70,7 @@ const register = async (req: Request, res: Response) => {
     });
     
     // Send verification email
-    const verificationLink = `${process.env.BASE_URL || 'http://localhost:5000'}/auth/verify-email/${verificationToken}`;
+    const verificationLink = `${process.env.BASE_URL || 'https://6859c11d9ad995f11899aee7--guileless-sunburst-55bbb8.netlify.app/'}/auth/verify-email/${verificationToken}`;
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
         <h2>Welcome to NaviProAI, ${name}!</h2>
@@ -275,7 +275,7 @@ const forgotPassword = async (req: Request, res: Response) => {
 
     // 4. Create reset URL and send email
     //    The URL should point to your FRONTEND reset password page
-    const resetURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
+    const resetURL = `${process.env.FRONTEND_URL || 'https://6859c11d9ad995f11899aee7--guileless-sunburst-55bbb8.netlify.app/'}/reset-password/${resetToken}`;
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
