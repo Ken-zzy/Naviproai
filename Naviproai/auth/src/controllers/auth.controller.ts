@@ -9,6 +9,37 @@ import { sendEmail } from '../utils/helper'; // Import the email helper
 import { validatePassword } from '../utils/validation'; // Import password validator
 import { IUser } from '../models/user.model';
 
+const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
+  // Create token
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
+    expiresIn: '1d',
+  });
+
+  const cookieOptions = {
+    // Set cookie to expire in 1 day (in milliseconds)
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000), 
+    // httpOnly: true makes the cookie inaccessible to client-side JavaScript,
+    // protecting against XSS attacks.
+    httpOnly: true,
+    // secure: true ensures the cookie is only sent over HTTPS.
+    // This should be true in production.
+    secure: process.env.NODE_ENV === 'production',
+  };
+
+  res
+    .status(statusCode)
+    .cookie('jwt', token, cookieOptions)
+    .json({
+      success: true,
+      // You can optionally send back some non-sensitive user data
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+};
+
 const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
@@ -42,7 +73,7 @@ const register = async (req: Request, res: Response) => {
     const verificationLink = `${process.env.BASE_URL || 'http://localhost:5000'}/auth/verify-email/${verificationToken}`;
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2>Welcome to FutureFlow, ${name}!</h2>
+        <h2>Welcome to NaviProAI, ${name}!</h2>
         <p>Thanks for registering! Please verify your email address by clicking the button below:</p>
         <p style="text-align: center;">
           <a href="${verificationLink}"
@@ -64,7 +95,7 @@ const register = async (req: Request, res: Response) => {
     `;
     await sendEmail({
       to: email,
-      subject: 'Verify Your Email for FutureFlow',
+      subject: 'Verify Your Email for NaviProAI',
       html: emailHtml,
     });
 
@@ -92,6 +123,7 @@ const login = async (req: Request, res: Response) => {
     }
     const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: '1d' });
     res.json({ token });
+    sendTokenResponse(user, 200, res);
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ error: 'Login failed' });
@@ -117,6 +149,7 @@ const googleCallback = (req: Request, res: Response): void => {
     const token = jwt.sign({ userId: user._id.toString(), email: user.email }, process.env.JWT_SECRET!, { expiresIn: '1d' });
     // Redirect to the index.html served by this backend with the token
     res.redirect(`/index.html?token=${token}`);
+    sendTokenResponse(req.user, 200, res);
   } catch (error) {
     console.error('Error in googleCallback:', error);
     // Redirect to the index.html served by this backend with an error
@@ -246,7 +279,7 @@ const forgotPassword = async (req: Request, res: Response) => {
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2>FutureFlow Password Reset Request</h2>
+        <h2>NaviProAI Password Reset Request</h2>
         <p>You are receiving this email because you (or someone else) have requested to reset the password for your account.</p>
         <p>Please click the button below to reset your password. This link is valid for 15 minutes:</p>
         <p style="text-align: center;">
@@ -270,7 +303,7 @@ const forgotPassword = async (req: Request, res: Response) => {
 
     const emailSent = await sendEmail({
       to: user.email as string, // email is guaranteed by findOne
-      subject: 'Your FutureFlow Password Reset Token (Valid for 15 min)',
+      subject: 'Your NaviProAI Password Reset Token (Valid for 15 min)',
       html: emailHtml,
     });
 
@@ -327,14 +360,14 @@ const resetPassword = async (req: Request, res: Response) => {
     // 3. Optionally, send a confirmation email
     const confirmationHtml = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2>FutureFlow Password Changed Successfully</h2>
-        <p>Your password for FutureFlow has been successfully changed.</p>
+        <h2>NaviProAI Password Changed Successfully</h2>
+        <p>Your password for NaviProAI has been successfully changed.</p>
         <p>If you did not make this change, please contact our support team immediately.</p>
       </div>
     `;
     await sendEmail({
       to: user.email as string,
-      subject: 'Your FutureFlow Password Has Been Changed',
+      subject: 'Your NaviProAI Password Has Been Changed',
       html: confirmationHtml,
     });
 
