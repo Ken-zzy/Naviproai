@@ -345,6 +345,13 @@ const resetPassword = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'An error occurred while resetting your password.' });
   }
 };
+const logout = (req: Request, res: Response) => {
+  res.cookie('jwt', '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+};
 
 export default {
   register,
@@ -355,4 +362,5 @@ export default {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  logout,
 };

@@ -15,11 +15,16 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize()); // Initialize passport but NO sessions
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
-// Serve static files from the dedicated 'public' directory.
-// This is more secure and prevents exposing sensitive project files.
-app.use(express.static(path.resolve(__dirname, '../../../public')));
+const allowedOrigins = [
+    'http://localhost:5173', // Your main frontend
+    process.env.FRONTEND_URL // For local testing (http://localhost:3000)
+].filter((origin): origin is string => typeof origin === 'string');
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+
+// Serve the frontend test page and other static assets from the 'frontend' directory.
+app.use(express.static(path.resolve(__dirname, '../../../frontend')));
 
 app.use('/auth', authRoutes);
 

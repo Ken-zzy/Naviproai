@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Test Page</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
+        .container { text-align: center; padding: 2rem; background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .tabs { margin-bottom: 1rem; }
+        .tabs button { padding: 10px 15px; border: 1px solid #ccc; background-color: #f0f0f0; cursor: pointer; }
+        .tabs button.active { background-color: #fff; border-bottom-color: #fff; }
+        .form-container { display: none; }
+        .form-container.active { display: block; }
+        input { width: calc(100% - 20px); padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button, .google-btn { display: inline-block; width: 100%; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box; }
+        .google-btn { background-color: #4285F4; color: white; margin-bottom: 1rem; }
+        form button { background-color: #28a745; color: white; border: none; }
+        #profile-section { display: none; }
+        #profile-section .logout-btn { background-color: #db4437; color: white; border: none; }
+        .g-recaptcha { display: inline-block; margin-bottom: 1rem; }
+        #status { margin-top: 1rem; padding: 10px; border-radius: 4px; display: none; }
+        #status.success { background-color: #d4edda; color: #155724; }
+        #status.error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="main-title">Auth Test Page</h1>
+
+        <div id="login-section">
+            <a href="/auth/google" class="google-btn">Login with Google</a>
+            <div class="tabs">
+                <button class="tab-button active" onclick="showForm('login')">Login</button>
+                <button class="tab-button" onclick="showForm('register')">Register</button>
+                <button class="tab-button" onclick="showForm('forgot')">Forgot Password</button>
+            </div>
+
+            <div id="login-form" class="form-container active">
+                <form onsubmit="handleLogin(event)">
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+
+            <div id="register-form" class="form-container">
+                <form onsubmit="handleRegister(event)">
+                    <input type="text" name="name" placeholder="Full Name" required>
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+
+            <div id="forgot-form" class="form-container">
+                <form onsubmit="handleForgotPassword(event)">
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                    <button type="submit">Send Reset Link</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="profile-section">
+            <p>Welcome!</p>
+            <div id="profile-details"></div>
+            <button id="logout-button" class="logout-btn">Logout</button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginSection = document.getElementById('login-section');
+        const profileSection = document.getElementById('profile-section');
+        const profileDetails = document.getElementById('profile-details');
+        const logoutButton = document.getElementById('logout-button');
+        const statusDiv = document.getElementById('status');
+        const mainTitle = document.getElementById('main-title');
+
+        // Since the page is served from the same origin as the API, we can use relative paths.
+        const API_BASE_URL = '/auth';
+
+        // --- UI Functions ---
+        function showForm(formName) {
+            document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            document.getElementById(`${formName}-form`).classList.add('active');
+            document.querySelector(`.tab-button[onclick="showForm('${formName}')"]`).classList.add('active');
+        }
+
+        function showStatus(message, isError = false) {
+            statusDiv.textContent = message;
+            statusDiv.className = isError ? 'error' : 'success';
+            statusDiv.style.display = 'block';
+        }
+
+        function hideStatus() {
+            statusDiv.style.display = 'none';
+        }
+
+        // Safely parse JSON from a response, handling empty or non-JSON bodies.
+        async function parseJsonResponse(response) {
+            const text = await response.text();
+            if (!text) {
+                return {}; // Return empty object for empty responses
+            }
+            try {
+                return JSON.parse(text);
+            } catch (err) {
+                console.error("Failed to parse JSON:", text);
+                // If parsing fails, return an object with an error message.
+                return { error: 'Received an invalid response from the server.' };
+            }
+        }
+
+        // This function checks if the user is logged in by fetching their profile
+        async function checkAuthStatus() {
+            hideStatus();
+            try {
+                const response = await fetch(`${API_BASE_URL}/profile`, { credentials: 'include' });
+                const user = await parseJsonResponse(response);
+                if (!response.ok || !user._id) throw new Error(user.error || 'Not authenticated');
+                loginSection.style.display = 'none';
+                mainTitle.style.display = 'none';
+                profileSection.style.display = 'block';
+                profileDetails.textContent = `ID: ${user._id}, Email: ${user.email}`;
+            } catch (error) {
+                console.log(error.message);
+                loginSection.style.display = 'block';
+                mainTitle.style.display = 'block';
+                profileSection.style.display = 'none';
+            }
+        }
+
+        // --- API Handlers ---
+        async function handleApiCall(endpoint, body) {
+            hideStatus();
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await parseJsonResponse(response);
+                if (!response.ok) throw new Error(data.error || 'An unknown error occurred.');
+                return data;
+            } catch (error) {
+                showStatus(error.message, true);
+                throw error; // Re-throw to stop further execution in the handler
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const result = await handleApiCall('/register', data);
+                showStatus(result.message || 'Registration successful! Please check your email to verify your account.');
+                form.reset();
+            } catch (error) {
+                // Error is already displayed by handleApiCall
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                // We need to use credentials: 'include' for login to set the httpOnly cookie
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include' // IMPORTANT for setting cookies
+                });
+                const result = await parseJsonResponse(response);
+                if (!response.ok) throw new Error(result.error || 'Login failed.');
+                await checkAuthStatus(); // Re-check auth status to update UI
+            } catch (error) {
+                showStatus(error.message, true);
+            }
+        }
+
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const result = await handleApiCall('/forgot-password', data);
+                showStatus(result.message || 'If an account with that email exists, a password reset link has been sent.');
+                form.reset();
+            } catch (error) {
+                // Error is already displayed by handleApiCall
+            }
+        }
+
+        // --- Event Listeners ---
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await fetch(`${API_BASE_URL}/logout`, { method: 'POST', credentials: 'include' });
+                await checkAuthStatus(); // Re-check auth status to update UI
+            } catch (error) {
+                showStatus('Logout failed.', true);
+            }
+        });
+
+        // Check authentication status when the page loads
+        document.addEventListener('DOMContentLoaded', checkAuthStatus);
+    </script>
+</body>
+</html>

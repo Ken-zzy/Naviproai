@@ -1,6 +1,5 @@
 # Dependency directories
 node_modules/
-/frontend
 
 # dotenv environment variable files
 .env

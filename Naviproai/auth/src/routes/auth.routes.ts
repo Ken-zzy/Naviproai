@@ -2,12 +2,11 @@ import express, { RequestHandler } from 'express'; // Import RequestHandler
 import passport from 'passport';
 import { authenticateJWT } from '../middleware/authMiddleware'; // Assuming this middleware exists and is compatible
 import authController from '../controllers/auth.controller';
-import rateLimit from 'express-rate-limit';
-import { verifyRecaptcha } from '../middleware/recaptcha.middleware'; // Import the reCAPTCHA middleware
+import rateLimit from 'express-rate-limit'; // Keep if other rate limits are used
 
 const router = express.Router();
 
-// Rate limiter for forgot password requests
+// Rate limiter for forgot password requests (keep if desired, independent of reCAPTCHA)
 const forgotPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // Limit each IP to 5 requests per `windowMs` (15 minutes)
@@ -16,9 +15,10 @@ const forgotPasswordLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-// Local authentication routes
-router.post('/register', verifyRecaptcha as RequestHandler, authController.register as RequestHandler);
+// Local authentication routes (reCAPTCHA removed)
+router.post('/register', authController.register as RequestHandler);
 router.post('/login', authController.login as RequestHandler); // <-- Removed verifyRecaptcha
+router.post('/logout', authController.logout as RequestHandler);
 
 // Google OAuth routes
 router.get('/google', passport.authenticate('google', { 
@@ -45,6 +45,6 @@ router.post('/change-password', authenticateJWT, authController.changePassword a
 router.get('/verify-email/:token', authController.verifyEmail as RequestHandler);
 
 // Password Reset Routes
-router.post('/forgot-password', forgotPasswordLimiter, verifyRecaptcha as RequestHandler, authController.forgotPassword as RequestHandler);
-router.post('/reset-password/:token', verifyRecaptcha as RequestHandler, authController.resetPassword as RequestHandler);
+router.post('/forgot-password', forgotPasswordLimiter, authController.forgotPassword as RequestHandler);
+router.post('/reset-password/:token', authController.resetPassword as RequestHandler);
 export default router;
