@@ -18,7 +18,8 @@ app.use(cookieParser());
 app.use(passport.initialize()); // Initialize passport but NO sessions
 
 const allowedOrigins = [
-    process.env.FRONTEND_URL // 
+    process.env.FRONTEND_URL,           // e.g., http://127.0.0.1:5500
+    'http://127.0.0.1:5500'       // your deployed frontend
 ].filter((origin): origin is string => !!origin);
 
 app.use(cors({
