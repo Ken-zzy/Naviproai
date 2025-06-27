@@ -18,11 +18,13 @@ app.use(cookieParser());
 app.use(passport.initialize()); // Initialize passport but NO sessions
 
 const allowedOrigins = [
-    'https://6859c11d9ad995f11899aee7--guileless-sunburst-55bbb8.netlify.app/', // Your main frontend
-    process.env.FRONTEND_URL // For local testing (http://localhost:3000)
-].filter((origin): origin is string => typeof origin === 'string');
+    process.env.FRONTEND_URL // 
+].filter((origin): origin is string => !!origin);
 
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 app.use('/auth', authRoutes);
 
