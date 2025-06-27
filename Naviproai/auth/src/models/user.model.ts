@@ -4,7 +4,9 @@ export interface IUser extends Document {
   email?: string;
   password?: string;
   googleId?: string;
-  name: string; // Align with schema: name is required
+  name: string;
+  firstName?: string; // <-- Add this
+  lastName?: string;  // <-- Add this
   isEmailVerified?: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
@@ -17,6 +19,8 @@ const UserSchema = new Schema<IUser>({
   password: { type: String },
   googleId: { type: String, unique: true, sparse: true },
   name: { type: String, required: true },
+  firstName: { type: String }, // <-- Add this
+  lastName: { type: String },  // <-- Add this
   isEmailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String },
   emailVerificationExpires: { type: Date },
@@ -26,7 +30,6 @@ const UserSchema = new Schema<IUser>({
   timestamps: true
 });
 
-// Fix OverwriteModelError by checking if model exists before defining it
 const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
 export default User;
