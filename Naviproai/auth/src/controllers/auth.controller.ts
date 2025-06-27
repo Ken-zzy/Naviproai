@@ -42,8 +42,9 @@ const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
 
 const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
-    
+    const { firstName, lastName, email, password } = req.body;
+    const name = `${firstName} ${lastName}`.trim();
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -65,6 +66,8 @@ const register = async (req: Request, res: Response) => {
       email, 
       password: hashed, 
       name,
+      firstName, // <-- Store firstName
+      lastName,  // <-- Store lastName
       emailVerificationToken: verificationToken,
       emailVerificationExpires: emailVerificationExpires
     });
