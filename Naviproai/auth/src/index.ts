@@ -13,9 +13,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(passport.initialize()); // Initialize passport but NO sessions
+ // Initialize passport but NO sessions
 
 const allowedOrigins = [
     process.env.FRONTEND_URL,           // e.g., http://127.0.0.1:5500
@@ -28,6 +26,10 @@ app.use(cors({
   credentials: true, // Allow cookies to be sent (important for sessions/auth)
   optionsSuccessStatus: 204
 }));
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(passport.initialize());
 
 app.use('/auth', authRoutes);
 
