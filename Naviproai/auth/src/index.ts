@@ -16,15 +16,20 @@ const app = express();
  // Initialize passport but NO sessions
 
 const allowedOrigins = [
-    process.env.FRONTEND_URL,           // e.g., http://127.0.0.1:5500
-    'http://127.0.0.1:5500'       // your deployed frontend
+    process.env.FRONTEND_URL,           // e.g., https://navipro.netlify.app
+    'http://127.0.0.1:5500'             // local frontend
 ].filter((origin): origin is string => !!origin);
 
 app.use(cors({
-  origin: allowedOrigins,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed HTTP methods
-  credentials: true, // Allow cookies to be sent (important for sessions/auth)
-  optionsSuccessStatus: 204
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
 }));
 
 app.use(express.json());
