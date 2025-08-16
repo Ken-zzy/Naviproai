@@ -5,10 +5,12 @@ import { ConfigService as NestConfigService } from '@nestjs/config';
 export class ConfigService {
   constructor(private readonly nestConfig: NestConfigService) {}
 
-  private getRequired(key: string): string {
-    const value = this.nestConfig.get<string>(key);
+  private getRequired<T>(key: string): T {
+    const value = this.nestConfig.get<T>(key);
     if (value === undefined || value === null) {
-      throw new Error(`Configuration error: Missing required environment variable "${key}"`);
+      throw new Error(
+        `Configuration error: Missing required environment variable "${key}"`,
+      );
     }
     return value;
   }
@@ -26,14 +28,13 @@ export class ConfigService {
   }
 
   get port(): number {
-    // Let Joi handle the parsing and default value.
     return this.nestConfig.get<number>('PORT', { infer: true });
   }
 
   get frontendUrl(): string {
     return this.getRequired('FRONTEND_URL');
   }
-  
+
   get backendUrl(): string {
     return this.getRequired('BACKEND_URL');
   }
@@ -43,12 +44,10 @@ export class ConfigService {
   }
 
   get emailPort(): number {
-    // Joi validation ensures this is a number.
     return this.nestConfig.get<number>('EMAIL_PORT', { infer: true });
   }
 
   get emailSecure(): boolean {
-    // Joi validation ensures this is a boolean.
     return this.nestConfig.get<boolean>('EMAIL_SECURE', { infer: true });
   }
 
@@ -84,15 +83,11 @@ export class ConfigService {
     return this.getRequired('GOOGLE_CALLBACK_URL');
   }
 
-  get youtubeApiKey(): string | undefined {
-    return this.nestConfig.get<string>('YOUTUBE_API_KEY');
+  get throttleTtl(): number {
+    return this.nestConfig.get('THROTTLE_TTL');
   }
 
-  get oneSignalAppId(): string | undefined {
-    return this.nestConfig.get<string>('ONESIGNAL_APP_ID');
-  }
-
-  get oneSignalApiKey(): string | undefined {
-    return this.nestConfig.get<string>('ONESIGNAL_API_KEY');
+  get throttleLimit(): number {
+    return this.nestConfig.get('THROTTLE_LIMIT');
   }
 }

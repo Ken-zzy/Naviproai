@@ -40,11 +40,27 @@ export class EmailService {
       from: this.configService.emailFrom,
       to: email,
       subject: 'Welcome to NaviPro! Please Verify Your Email',
-      html: `
-        <h1>Welcome to NaviPro!</h1>
-        <p>Thank you for registering. Please click the link below to verify your email address:</p>
-        <a href="${url}" target="_blank">Verify Your Email</a>
-        <p>If you did not register for this account, you can safely ignore this email.</p>
+      html: `<!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { padding: 20px; }
+              .button { background-color: #007bff; color: white !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
+              a { color: #007bff; }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>Welcome to NaviPro!</h1>
+              <p>Thank you for registering. Please click the button below to verify your email address:</p>
+              <p><a href="${url}" target="_blank" class="button">Verify Your Email</a></p>
+              <p>If you did not register for this account, you can safely ignore this email.</p>
+          </div>
+      </body>
+
       `,
     };
 

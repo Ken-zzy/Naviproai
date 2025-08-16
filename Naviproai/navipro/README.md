@@ -1,98 +1,133 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NaviPro.ai Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is the backend service for NaviPro.ai, a personalized learning roadmap generator and career development assistant.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Getting Started
 
-## Description
+### Prerequisites
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js (v22 or higher recommended)
+- npm
+- A running instance of the AI agent service.
+- A MongoDB database (e.g., from MongoDB Atlas)
 
-## Project setup
+### Installation & Setup
 
-```bash
-$ npm install
-```
+1. **Clone the repository:**
 
-## Compile and run the project
+    ```sh
+    git clone <repository-url>
+    cd navipro
+    ```
 
-```bash
-# development
-$ npm run start
+2. **Install dependencies:**
 
-# watch mode
-$ npm run start:dev
+    ```sh
+    npm install
+    ```
 
-# production mode
-$ npm run start:prod
-```
+3. **Set up environment variables:**
+    Create a `.env` file in the root directory. You can copy the contents from your `.env` file provided in the context. Ensure all variables like `DATABASE_URL`, `JWT_SECRET`, and API keys are correctly filled out.
 
-## Run tests
+4. **Run the application:**
 
-```bash
-# unit tests
-$ npm run test
+    ```sh
+    # For development with hot-reloading
+    npm run start:dev
+    ```
 
-# e2e tests
-$ npm run test:e2e
+    The application will be running at `http://localhost:3000/api`.
 
-# test coverage
-$ npm run test:cov
-```
+## ✨ Features
 
-## Deployment
+### 🗺️ AI Roadmap Generation
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Generates a personalized learning roadmap based on user goals and current skill level.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- **Structure:** Months → Weeks → 5 Daily Tasks per week.
+- **Task Metadata:** Each task includes `estimated_time`, `resources`, `goal`, `task_id`, `completed`, and `completed_date`.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+### 💬 AI Chat Assistant
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Provides a context-aware chat assistant powered by a Large Language Model (LLM).
 
-## Resources
+- **Context:** Based on the user’s goal, target role, and completed tasks.
+- **Memory:** Maintains the last 20 messages in the chat history.
+- **Tone:** Responds with motivational, supportive, and learning-specific content.
 
-Check out a few resources that may come in handy when working with NestJS:
+### 🔥 Streak System
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Keeps users engaged by tracking their consistency.
 
-## Support
+- **Flexible Types:** Supports both **daily** and **weekly** streaks based on user preference.
+- **Tracking:** Monitors current and longest streaks.
+- **Integration:** Automatically updates when a user completes a task.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 🔔 Multi-Channel Notifications
 
-## Stay in touch
+A robust system to keep users informed and motivated.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- **In-App:** Stores notifications for users to view within the application.
+- **Email:** Sends email notifications for important events.
+- **Push Notifications:** Placeholder for sending push notifications to mobile devices.
+- **Delivery Strategy:**
+  - **In-App:** All notifications are available in-app for a persistent history.
+  - **Push Notifications:** Used for timely, high-priority alerts to encourage immediate action (e.g., `STREAK_REMINDER`, `MOTIVATIONAL_MESSAGE`, `PROGRESS_UPDATE`).
+  - **Email:** Used for less time-sensitive updates, summaries, or as a fallback (e.g., weekly `NEW_RECOMMENDATION` digests, monthly `PROGRESS_UPDATE` reports).
 
-## License
+### 🎥 Weekly Video Recommendations
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Fetches relevant YouTube videos to supplement learning.
+
+- **Criteria:** Based on the current week’s focus and the user's target role.
+- **Returns:** A list of video objects containing `title`, `url`, `channel`, `views`, `duration`, and `thumbnail`.
+- **Resilience:** Falls back to dummy videos if the YouTube API is unavailable.
+
+## 🔁 API Endpoints
+
+All endpoints are prefixed with `/api`. Endpoints marked with a 🔒 require authentication.
+
+### Health Check
+
+- `GET /health`: Checks the health of the service.
+
+### Authentication (`/auth`)
+
+- `POST /auth/register`: Register a new user with email and password.
+- `POST /auth/login`: Log in a user and get a JWT.
+- `GET /auth/google`: Redirect to Google for authentication.
+- `GET /auth/google/callback`: Callback URL for Google OAuth.
+
+### AI (`/`)
+
+- `POST /generate_roadmap` 🔒: Generates a personalized learning roadmap.
+- `POST /chat` 🔒: Interact with the AI chat assistant.
+
+### Users (`/users`) 🔒
+
+- `GET /`: Get a list of all users (admin only).
+- `GET /:id`: Get a specific user by their ID.
+
+### Streaks (`/streaks`) 🔒
+
+- `GET /`: Get the current and longest streak for the authenticated user.
+- `PATCH /type`: Change the authenticated user's preferred streak type (daily/weekly).
+
+### Notifications (`/notifications`) 🔒
+
+- `GET /`: Get all notifications for the authenticated user.
+- `PATCH /:notificationId/read`: Mark a specific notification as read.
+- `PATCH /read/all`: Mark all of the user's notifications as read.
+
+### Roadmap & Progress (`/roadmap`) 🔒
+
+- `GET /daily-task`: Get the next uncompleted daily task for the authenticated user.
+- `POST /complete-task/:taskId`: Mark a task as complete for the authenticated user.
+
+### Progress (`/user-progress`) 🔒
+
+- `GET /`: Get the authenticated user's overall progress.
+
+### Recommendations (`/week-videos`) 🔒
+
+- `GET /`: Get weekly video recommendations for the authenticated user.

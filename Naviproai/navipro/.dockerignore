@@ -1,15 +1,6 @@
-# Git files
-.git
-
-# Environment variables - should be passed at runtime
-.env
-
-# Dependencies and build artifacts
 node_modules
 dist
-
-# Docker files
+.env
+npm-debug.log
 Dockerfile
-
-# Log files
-*.log
+.dockerignore

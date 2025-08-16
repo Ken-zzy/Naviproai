@@ -79,6 +79,27 @@ export class AuthService {
 
     return { message: 'Email verified successfully. You can now log in.' };
   }
+  async resendVerificationLink(email: string): Promise<{ message: string }> {
+    const user = await this.userService.findByEmail(email);
+
+    if (!user || !user.password) {
+      // To prevent email enumeration, we send a generic success message
+      // even if the user doesn't exist or signed up with Google.
+      return { message: 'If an account with that email exists and requires verification, a new link has been sent.' };
+    }
+
+    if (user.isVerified) {
+      throw new ConflictException('This account has already been verified.');
+    }
+
+    // Generate a new token and update the user
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    user.verificationToken = verificationToken;
+    await this.userService.save(user);
+
+    await this.emailService.sendVerificationLink(user.email, verificationToken);
+    return { message: 'A new verification link has been sent to your email.' };
+  }
 
   async handleGoogleLogin(profile: { googleId: string; email: string; name: string }) {
     let user = await this.userService.findByEmail(profile.email);
