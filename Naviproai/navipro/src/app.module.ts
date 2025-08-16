@@ -14,6 +14,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { EmailModule } from './email/email.module';
+import { ThrottlerGuard, ThrottlerModule } from 'nestjs-throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { PushNotificationsModule } from './push-notifications/push-notifications.module';
 
 @Module({
   imports: [
@@ -25,6 +28,10 @@ import { EmailModule } from './email/email.module';
       }),
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 1 minute in milliseconds
+      limit: 20,  // 20 requests per IP per minute
+    }]),
     AuthModule,
     UserModule,
     AiModule,
@@ -33,9 +40,16 @@ import { EmailModule } from './email/email.module';
     StreakModule,
     NotificationsModule,
     RecommendationsModule,
+    PushNotificationsModule,
     EmailModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

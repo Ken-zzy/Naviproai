@@ -1,4 +1,17 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RecommendationsService } from './recommendations.service';
 
-@Controller('recommendations')
-export class RecommendationsController {}
+@Controller('week-videos')
+@UseGuards(AuthGuard('jwt'))
+export class RecommendationsController {
+  constructor(
+    private readonly recommendationsService: RecommendationsService,
+  ) {}
+
+  @Get()
+  async getWeeklyVideos(@Request() req) {
+    const userId = req.user.id;
+    return this.recommendationsService.getWeeklyVideos(userId);
+  }
+}

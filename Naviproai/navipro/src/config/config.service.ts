@@ -33,6 +33,10 @@ export class ConfigService {
   get frontendUrl(): string {
     return this.getRequired('FRONTEND_URL');
   }
+  
+  get backendUrl(): string {
+    return this.getRequired('BACKEND_URL');
+  }
 
   get emailHost(): string {
     return this.getRequired('EMAIL_HOST');
@@ -78,5 +82,17 @@ export class ConfigService {
 
   get googleCallbackUrl(): string {
     return this.getRequired('GOOGLE_CALLBACK_URL');
+  }
+
+  get youtubeApiKey(): string | undefined {
+    return this.nestConfig.get<string>('YOUTUBE_API_KEY');
+  }
+
+  get oneSignalAppId(): string | undefined {
+    return this.nestConfig.get<string>('ONESIGNAL_APP_ID');
+  }
+
+  get oneSignalApiKey(): string | undefined {
+    return this.nestConfig.get<string>('ONESIGNAL_API_KEY');
   }
 }

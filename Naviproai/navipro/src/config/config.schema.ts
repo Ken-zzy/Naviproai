@@ -10,6 +10,7 @@ export const configValidationSchema = Joi.object({
   GOOGLE_CLIENT_SECRET: Joi.string().required(),
   GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
   FRONTEND_URL: Joi.string().required(),
+  BACKEND_URL: Joi.string().uri().required(),
   EMAIL_HOST: Joi.string().required(),
   EMAIL_PORT: Joi.number().required(),
   EMAIL_SECURE: Joi.boolean().required(),

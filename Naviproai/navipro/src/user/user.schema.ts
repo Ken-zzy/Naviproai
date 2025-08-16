@@ -8,6 +8,11 @@ export enum AuthProvider {
   EMAIL = 'email',
 }
 
+export enum StreakType {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+}
+
 @Schema({ timestamps: true })
 export class User {
   @Prop({ required: true, unique: true })
@@ -30,6 +35,21 @@ export class User {
 
   @Prop({ type: String, default: null, select: false })
   verificationToken: string | null;
+
+  @Prop({ type: String, enum: StreakType, default: StreakType.DAILY })
+  streakType: StreakType;
+
+  @Prop({ default: 0 })
+  currentStreak: number;
+
+  @Prop({ default: 0 })
+  longestStreak: number;
+
+  @Prop()
+  lastStreakIncrement: Date;
+
+  @Prop([String])
+  pushTokens: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

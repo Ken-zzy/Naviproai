@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import * as nodemailer from 'nodemailer';
+import { Transporter } from 'nodemailer';
+import Mail from 'nodemailer/lib/mailer';
 
 @Injectable()
 export class EmailService {
-  private readonly transporter: nodemailer.Transporter;
+  private readonly transporter: Transporter;
   private readonly logger = new Logger(EmailService.name);
 
   constructor(private readonly configService: ConfigService) {
@@ -19,10 +21,22 @@ export class EmailService {
     });
   }
 
-  async sendVerificationLink(email: string, token: string) {
-    const url = `${this.configService.frontendUrl}/auth/verify-email?token=${token}`;
+  async sendMail(mailOptions: Mail.Options): Promise<void> {
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Email sent successfully to ${mailOptions.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${mailOptions.to}`, error.stack);
+      // Depending on the application's needs, you might want to re-throw the error
+      // or handle it gracefully.
+      throw error;
+    }
+  }
 
-    const mailOptions = {
+  async sendVerificationLink(email: string, token: string): Promise<void> {
+    const url = `${this.configService.backendUrl}/auth/verify-email?token=${token}`;
+
+    const mailOptions: Mail.Options = {
       from: this.configService.emailFrom,
       to: email,
       subject: 'Welcome to NaviPro! Please Verify Your Email',
@@ -34,7 +48,6 @@ export class EmailService {
       `,
     };
 
-    await this.transporter.sendMail(mailOptions);
-    this.logger.log(`Verification email sent to ${email}`);
+    await this.sendMail(mailOptions);
   }
 }

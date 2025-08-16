@@ -1,46 +1,41 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsController } from './notifications.controller';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import { NotificationsService } from './notifications.service';
 
 describe('NotificationsController', () => {
   let controller: NotificationsController;
-  let app: INestApplication;
+  let service: NotificationsService;
+
+  const mockNotificationsService = {
+    findAllForUser: jest.fn().mockResolvedValue([]),
+    markAsRead: jest.fn().mockResolvedValue({ read: true }),
+    markAllAsRead: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [NotificationsController],
+      providers: [
+        {
+          provide: NotificationsService,
+          useValue: mockNotificationsService,
+        },
+      ],
     }).compile();
 
     controller = module.get<NotificationsController>(NotificationsController);
-    app = module.createNestApplication();
-    await app.init();
-  });
-
-  afterEach(async () => {
-    await app.close();
+    service = module.get<NotificationsService>(NotificationsService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should have the correct route prefix', () => {
-    const controllerPath = Reflect.getMetadata('path', NotificationsController);
-    expect(controllerPath).toBe('notifications');
-  });
-
-  it('should return 404 for unimplemented GET /notifications', async () => {
-    await request(app.getHttpServer())
-      .get('/notifications')
-      .expect(404);
-  });
-
-  it('should be injectable into other modules', () => {
-    expect(controller).toBeInstanceOf(NotificationsController);
-  });
-
-  it('should allow future method additions without breaking instantiation', () => {
-    expect(() => new NotificationsController()).not.toThrow();
+  describe('getMyNotifications', () => {
+    it('should call the service to find notifications for a user', async () => {
+      const mockReq = { user: { id: 'user-123' } };
+      await controller.getMyNotifications(mockReq);
+      expect(service.findAllForUser).toHaveBeenCalledWith(mockReq.user.id);
+    });
   });
 });
