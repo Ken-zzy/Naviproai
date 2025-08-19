@@ -1,39 +1,31 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import helmet from 'helmet';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from './config/config.service';
-import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
 import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const port = configService.port || 3000;
 
-  // Set global prefix for all routes
-  app.setGlobalPrefix('api');
-
-  // Use Helmet for security-related HTTP headers
+  app.enableCors();
   app.use(helmet());
-
-  // Use compression to reduce response size
   app.use(compression());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // Enable CORS with a specific origin for production
-  app.enableCors({
-    origin: configService.frontendUrl,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+  const config = new DocumentBuilder()
+    .setTitle('NaviProAI API')
+    .setDescription('The official API documentation for the NaviProAI application.')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
-  // Add global validation pipe to ensure all incoming data is validated
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // Strip away properties that do not have any decorators
-    forbidNonWhitelisted: true, // Throw an error if non-whitelisted values are provided
-  }));
-
-  // Enable graceful shutdown hooks
-  app.enableShutdownHooks();
-
-  await app.listen(configService.port || 3000);
+  await app.listen(port);
+  Logger.log(`🚀 Application is running on: http://localhost:${port}/api`);
 }
 bootstrap();
