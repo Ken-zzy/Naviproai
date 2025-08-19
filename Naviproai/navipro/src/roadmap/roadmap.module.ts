@@ -9,11 +9,11 @@ import { AuthModule } from '../auth/auth.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Roadmap.name, schema: RoadmapSchema }]),
-    StreakModule,
-    AuthModule, // For protecting routes
+    StreakModule, // <-- This makes StreakService available for injection
+    AuthModule,   // <-- For AuthGuard in the controller
   ],
   controllers: [RoadmapController],
   providers: [RoadmapService],
-  exports: [RoadmapService], // Export so other modules like AiModule can use it
+  exports: [RoadmapService], // <-- Export for AiModule to use
 })
 export class RoadmapModule {}

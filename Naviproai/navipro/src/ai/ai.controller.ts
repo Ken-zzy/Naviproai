@@ -3,7 +3,6 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
   Logger,
   UseGuards,
@@ -14,7 +13,7 @@ import { ChatDto } from './dto/chat.dto';
 import { GenerateRoadmapDto } from './dto/generate-roadmap.dto';
 import { AuthGuard } from '@nestjs/passport';
 
-@Controller() // Routes are now /generate_roadmap and /chat/:user_id
+@Controller('ai')
 export class AiController {
   private readonly logger = new Logger(AiController.name);
   constructor(private readonly aiService: AiService) {}

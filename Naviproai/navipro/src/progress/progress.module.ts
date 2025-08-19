@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ProgressController } from './progress.controller';
 import { ProgressService } from './progress.service';
+import { ProgressController } from './progress.controller';
 import { RoadmapModule } from '../roadmap/roadmap.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [RoadmapModule, AuthModule],
+  imports: [
+    RoadmapModule, // Provides RoadmapService for progress tracking
+    AuthModule,    // Provides AuthGuard for controller
+  ],
   controllers: [ProgressController],
   providers: [ProgressService],
 })

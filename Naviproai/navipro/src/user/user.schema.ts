@@ -1,6 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+export type UserDocument = User & Document;
+
+export enum AuthProvider {
+  GOOGLE = 'google',
+  EMAIL = 'email',
+}
+
 export enum StreakType {
   DAILY = 'DAILY',
   WEEKLY = 'WEEKLY',
@@ -16,6 +23,9 @@ export class User extends Document {
 
   @Prop({ required: false })
   password?: string;
+
+  @Prop({ type: [String], enum: AuthProvider, required: true })
+  providers: AuthProvider[];
 
   @Prop({ default: false })
   isVerified: boolean;
@@ -37,6 +47,9 @@ export class User extends Document {
 
   @Prop({ type: Date, default: null })
   lastStreakIncrement: Date | null;
+
+  @Prop({ type: [String], default: [] })
+  pushTokens: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
