@@ -1,13 +1,17 @@
 import { Module } from '@nestjs/common';
-import { StreakController } from './streak.controller';
+import { MongooseModule } from '@nestjs/mongoose';
 import { StreakService } from './streaks.service';
-import { UserModule } from '../user/user.module';
+import { StreakController } from './streak.controller';
+import { User, UserSchema } from '../user/user.schema';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [UserModule, AuthModule],
+  imports: [
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    AuthModule, // Often needed for guards in the controller
+  ],
   controllers: [StreakController],
   providers: [StreakService],
-  exports: [StreakService],
+  exports: [StreakService], // Export for other modules that depend on it
 })
 export class StreakModule {}
