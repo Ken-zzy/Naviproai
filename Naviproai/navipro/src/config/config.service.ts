@@ -8,9 +8,7 @@ export class ConfigService {
   private getRequired<T>(key: string): T {
     const value = this.nestConfig.get<T>(key);
     if (value === undefined || value === null) {
-      throw new Error(
-        `Configuration error: Missing required environment variable "${key}"`,
-      );
+      throw new Error(`Configuration error: Missing required environment variable "${key}"`);
     }
     return value;
   }
@@ -28,7 +26,7 @@ export class ConfigService {
   }
 
   get port(): number {
-    return this.nestConfig.get<number>('PORT', { infer: true });
+    return this.nestConfig.get('PORT');
   }
 
   get frontendUrl(): string {
@@ -44,11 +42,11 @@ export class ConfigService {
   }
 
   get emailPort(): number {
-    return this.nestConfig.get<number>('EMAIL_PORT', { infer: true });
+    return this.nestConfig.get('EMAIL_PORT');
   }
 
   get emailSecure(): boolean {
-    return this.nestConfig.get<boolean>('EMAIL_SECURE', { infer: true });
+    return this.nestConfig.get('EMAIL_SECURE');
   }
 
   get emailUser(): string {
@@ -83,11 +81,15 @@ export class ConfigService {
     return this.getRequired('GOOGLE_CALLBACK_URL');
   }
 
-  get throttleTtl(): number {
-    return this.nestConfig.get('THROTTLE_TTL');
+  get youtubeApiKey(): string | undefined {
+    return this.nestConfig.get('YOUTUBE_API_KEY');
   }
 
-  get throttleLimit(): number {
-    return this.nestConfig.get('THROTTLE_LIMIT');
+  get oneSignalAppId(): string | undefined {
+    return this.nestConfig.get('ONESIGNAL_APP_ID');
+  }
+
+  get oneSignalApiKey(): string | undefined {
+    return this.nestConfig.get('ONESIGNAL_API_KEY');
   }
 }
