@@ -77,6 +77,9 @@ export class StreakService {
   private isStreakBroken(user: UserDocument, now: Date): boolean {
     const last = user.lastStreakIncrement;
     if (!last) {
+      // This case is logically handled by the callers, but this check satisfies TypeScript
+      // and prevents runtime errors if the method is ever called directly without a guard.
+      // If there's no last date, the streak isn't "broken", it just hasn't started.
       return false;
     }
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
