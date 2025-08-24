@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { User } from '../../user/user.schema';
 
 export enum ChatMessageRole {
@@ -7,23 +7,24 @@ export enum ChatMessageRole {
   ASSISTANT = 'assistant',
 }
 
-@Schema({ _id: false })
+@Schema({ timestamps: true })
 export class ChatMessage {
-  @Prop({ type: String, enum: ChatMessageRole, required: true })
-  role: ChatMessageRole;
+  @Prop({ required: true, enum: ChatMessageRole })
+  role!: ChatMessageRole;
 
   @Prop({ required: true })
-  content: string;
+  content!: string;
 }
+
 export const ChatMessageSchema = SchemaFactory.createForClass(ChatMessage);
 
 @Schema({ timestamps: true })
 export class ChatHistory extends Document {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true })
-  userId: User;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
+  userId!: User;
 
   @Prop({ type: [ChatMessageSchema], default: [] })
-  messages: ChatMessage[];
+  messages!: ChatMessage[];
 }
 
 export const ChatHistorySchema = SchemaFactory.createForClass(ChatHistory);

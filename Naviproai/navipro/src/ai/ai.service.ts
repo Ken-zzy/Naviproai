@@ -29,8 +29,8 @@ export class AiService {
     );
 
     try {
-      // Dynamically import the ESM-only 'got' package
-      const { got } = await import('got');
+      // Correctly import the default export from ESM-only 'got' package
+      const got = (await import('got')).default;
       const response = await got.post(aiAgentUrl, {
         json: {
           goal: `Create a learning roadmap for a ${currentLevel} to become a ${targetRole}.`,
@@ -48,7 +48,7 @@ export class AiService {
     } catch (error) {
       this.logger.error(
         'Failed to generate roadmap from AI agent',
-        error.stack,
+        error instanceof Error ? error.stack : String(error),
       );
       throw new InternalServerErrorException('Failed to generate learning roadmap.');
     }
@@ -79,7 +79,8 @@ export class AiService {
     `;
 
     try {
-      const { got } = await import('got');
+      // Correctly import the default export from ESM-only 'got' package
+      const got = (await import('got')).default;
       const aiResponse = await got.post(this.configService.aiAgentUrl, {
         json: {
           goal: contextPrompt,
@@ -112,7 +113,10 @@ export class AiService {
 
       return aiResponse;
     } catch (error) {
-      this.logger.error('Failed to get chat response from AI agent', error.stack);
+      this.logger.error(
+        'Failed to get chat response from AI agent',
+        error instanceof Error ? error.stack : String(error),
+      );
       throw new InternalServerErrorException('Failed to get chat response.');
     }
   }

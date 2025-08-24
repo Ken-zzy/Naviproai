@@ -1,7 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import { RoadmapService } from '../roadmap/roadmap.service';
-import { VideoRecommendation } from './dto/video-recommendation.dto';
 
 @Injectable()
 export class RecommendationsService {
@@ -12,56 +11,42 @@ export class RecommendationsService {
     private readonly roadmapService: RoadmapService,
   ) {}
 
-  async getWeeklyVideos(userId: string): Promise<VideoRecommendation[]> {
-    const currentWeek = await this.roadmapService.getCurrentWeek(userId);
-    if (!currentWeek) {
-      this.logger.log(`No active week found for user ${userId}, returning dummy videos.`);
-      return this.getDummyVideos();
-    }
-
+  async getWeeklyVideos(userId: string): Promise<any> {
     const youtubeApiKey = this.configService.youtubeApiKey;
     if (!youtubeApiKey) {
-      this.logger.warn('YOUTUBE_API_KEY not configured. Falling back to dummy videos.');
-      return this.getDummyVideos();
+      this.logger.warn('YouTube API key not configured. Skipping video recommendations.');
+      return { videos: [] };
     }
 
-    const query = `${currentWeek.focus} tutorial for beginners`;
-    this.logger.log(`Searching YouTube for: "${query}"`);
+    const currentWeek = await this.roadmapService.getCurrentWeek(userId);
+    if (!currentWeek) {
+      return { videos: [] }; // No current week to base recommendations on
+    }
+
+    const searchQuery = encodeURIComponent(
+      `tutorial for ${currentWeek.focus}`,
+    );
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&key=${youtubeApiKey}&maxResults=5`;
 
     try {
       const { got } = await import('got');
-      const response = await got.get('https://www.googleapis.com/youtube/v3/search', {
-        searchParams: {
-          part: 'snippet',
-          q: query,
-          type: 'video',
-          maxResults: 5,
-          key: youtubeApiKey,
-        },
-      }).json<any>();
+      const response = await got.get(url).json<any>();
 
-      return response.items.map((item: any) => ({
+      const videos = response.items.map((item: any) => ({
+        id: item.id.videoId,
         title: item.snippet.title,
-        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-        channel: item.snippet.channelTitle,
         thumbnail: item.snippet.thumbnails.default.url,
       }));
-    } catch (error) {
-      this.logger.error('Failed to fetch videos from YouTube API', error.stack);
-      return this.getDummyVideos();
-    }
-  }
 
-  private getDummyVideos(): VideoRecommendation[] {
-    return [
-      {
-        title: 'Dummy Video 1: Getting Started with Your Goal',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        channel: 'Helpful Channel',
-        views: '1M',
-        duration: '10:00',
-        thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-      },
-    ];
+      return { videos };
+    } catch (error) {
+      this.logger.error(
+        'Failed to fetch videos from YouTube API',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        'Could not fetch video recommendations.',
+      );
+    }
   }
 }

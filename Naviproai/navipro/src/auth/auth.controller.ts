@@ -1,55 +1,50 @@
-import { Controller, Post, Body, UnauthorizedException, HttpCode, HttpStatus, Get, Query, UseGuards, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { ResendVerificationDto } from './dto/resend-verification.dto';
-import { AuthGuard } from '@nestjs/passport';
-import type { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @HttpCode(HttpStatus.OK)
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
+  }
+
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return this.authService.login(user);
-  }
-
-  @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
-  }
-
-  @Post('resend-verification')
-  @HttpCode(HttpStatus.OK)
-  async resendVerification(@Body() resendDto: ResendVerificationDto): Promise<{ message: string }> {
-    return this.authService.resendVerificationLink(resendDto.email);
-  }
-
-  @Get('verify-email')
-  async verifyEmail(@Query('token') token: string) {
-    return this.authService.verifyEmail(token);
+    return this.authService.login(user as any);
   }
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {
-    // Initiates the Google OAuth2 login flow
-  }
+  async googleAuth(@Req() req: Request) {}
 
-  @Get('google/callback')
+  @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req, @Res() res: Response) {
-    const { access_token } = await this.authService.handleGoogleLogin(req.user);
-
-    // In a real app, you would redirect to your frontend with the token.
-    // For example: res.redirect(`http://localhost:3001/login/success?token=${access_token}`);
-    // For this example, we'll just return the token as JSON.
-    return res.json({ access_token });
+  async googleAuthRedirect(@Req() req: { user: any }) {
+    // The google strategy should place the user on the request object.
+    // The service then handles creating a JWT.
+    return this.authService.handleGoogleLogin(req.user);
   }
 }

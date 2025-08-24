@@ -2,16 +2,21 @@ import { Controller, Get, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RecommendationsService } from './recommendations.service';
 
-@Controller('week-videos')
+interface AuthenticatedRequest {
+  user: {
+    userId: string;
+    email: string;
+  };
+}
+
+@Controller('recommendations')
 @UseGuards(AuthGuard('jwt'))
 export class RecommendationsController {
-  constructor(
-    private readonly recommendationsService: RecommendationsService,
-  ) {}
+  constructor(private readonly recommendationsService: RecommendationsService) {}
 
-  @Get()
-  async getWeeklyVideos(@Request() req) {
-    const userId = req.user.id;
+  @Get('weekly-videos')
+  async getWeeklyVideos(@Request() req: AuthenticatedRequest) {
+    const userId = req.user.userId;
     return this.recommendationsService.getWeeklyVideos(userId);
   }
 }

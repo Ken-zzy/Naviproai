@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { StreakService } from './streaks.service';
+import { StreakService } from './streak.service';
 import { User, UserDocument, StreakType } from '../user/user.schema';
 import { NotFoundException } from '@nestjs/common';
 

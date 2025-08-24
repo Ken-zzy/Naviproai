@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: navipro-api
+    ports:
+      - "${PORT:-3000}:3000" # Use port from .env, default to 3000
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    # The following volumes are for development to enable hot-reloading.
+    # For a production deployment, you should remove the 'volumes' section.
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    # This command overrides the Dockerfile's CMD to run in watch mode for development.
+    command: npm run start:dev
+
+  mongo:
+    image: mongo:latest
+    container_name: navipro-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+volumes:
+  mongo-data:
+    driver: local

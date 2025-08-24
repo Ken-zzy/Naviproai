@@ -66,7 +66,7 @@ export class StreakService {
     };
   }
 
-  async setStreakType(userId: string, streakType: StreakType): Promise<UserDocument> {
+  async setStreakType(userId: string, streakType: StreakType): Promise<UserDocument | null> {
     return this.userModel.findByIdAndUpdate(
       userId,
       { $set: { streakType, currentStreak: 0, lastStreakIncrement: null } },
@@ -76,6 +76,9 @@ export class StreakService {
 
   private isStreakBroken(user: UserDocument, now: Date): boolean {
     const last = user.lastStreakIncrement;
+    if (!last) {
+      return false;
+    }
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const lastDay = new Date(last.getFullYear(), last.getMonth(), last.getDate());
 
@@ -95,6 +98,9 @@ export class StreakService {
 
   private canIncrementStreak(user: UserDocument, now: Date): boolean {
     const last = user.lastStreakIncrement;
+    if (!last) {
+      return true;
+    }
     if (user.streakType === StreakType.DAILY) {
       return now.toDateString() !== last.toDateString();
     }

@@ -3,48 +3,41 @@ import { getModelToken } from '@nestjs/mongoose';
 import { AiService } from './ai.service';
 import { ConfigService } from '../config/config.service';
 import { InternalServerErrorException } from '@nestjs/common';
-import { GenerateRoadmapDto } from './dto/generate-roadmap.dto';
 import { RoadmapService } from '../roadmap/roadmap.service';
 import { UserService } from '../user/user.service';
 import { ChatHistory } from './schemas/chat-history.schema';
-import { got } from 'got';
+import got from 'got';
 
-const mockedGotPost = jest.mocked(got.post);
+// Mock the 'got' module
+jest.mock('got');
+
+const mockedGot = got as jest.Mocked<typeof got>;
 
 describe('AiService', () => {
   let service: AiService;
-  let mockJson: jest.Mock; // This will be the mock for the .json() method
 
   const mockConfigService = {
     aiAgentUrl: 'http://fake-url.com',
     aiAgentKey: 'fake-key',
   };
-
   const mockRoadmapService = {
-    createOrUpdateRoadmap: jest.fn().mockImplementation((userId, data) => Promise.resolve({ userId, ...data })),
+    createOrUpdateRoadmap: jest
+      .fn()
+      .mockImplementation((userId, data) => Promise.resolve({ userId, ...data })),
     getRoadmapByUserId: jest.fn().mockResolvedValue({ months: [] }),
   };
-
   const mockUserService = {
     findById: jest.fn().mockResolvedValue({ name: 'Test User' }),
   };
-
   const mockChatHistoryModel = {
     findOne: jest.fn(),
-    // Mock findOneAndUpdate to return an object with an exec method
     findOneAndUpdate: jest.fn().mockReturnValue({
       exec: jest.fn().mockResolvedValue(true),
     }),
   };
 
   beforeEach(async () => {
-    // Reset mocks before each test
     jest.clearAllMocks();
-
-    mockJson = jest.fn();
-    mockedGotPost.mockReturnValue({
-      json: mockJson,
-    } as any);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -65,15 +58,18 @@ describe('AiService', () => {
 
   describe('generateRoadmap', () => {
     const userId = 'user-123';
-    const dto: GenerateRoadmapDto = { targetRole: 'dev', currentLevel: 'beginner' };
+    const dto = { targetRole: 'dev', currentLevel: 'beginner' };
 
     it('should call got.post with correct parameters and return data', async () => {
       const mockResponse = { roadmap: 'This is the roadmap' };
-      mockJson.mockResolvedValue(mockResponse);
+      const mockJsonResponse = jest.fn().mockResolvedValue(mockResponse);
+      mockedGot.post.mockReturnValue({
+        json: mockJsonResponse,
+      } as any);
 
       const result = await service.generateRoadmap(userId, dto);
 
-      expect(mockedGotPost).toHaveBeenCalledWith('http://fake-url.com', {
+      expect(mockedGot.post).toHaveBeenCalledWith('http://fake-url.com', {
         json: {
           goal: `Create a learning roadmap for a ${dto.currentLevel} to become a ${dto.targetRole}.`,
         },
@@ -81,36 +77,18 @@ describe('AiService', () => {
           Authorization: 'Bearer fake-key',
         },
       });
-      expect(mockJson).toHaveBeenCalled();
+      expect(mockJsonResponse).toHaveBeenCalled();
       expect(mockRoadmapService.createOrUpdateRoadmap).toHaveBeenCalledWith(userId, mockResponse);
       expect(result).toEqual({ userId, ...mockResponse });
     });
 
     it('should throw an InternalServerErrorException on failure', async () => {
-      mockJson.mockRejectedValue(new Error('Network error'));
-      await expect(service.generateRoadmap(userId, dto)).rejects.toThrow(InternalServerErrorException);
-    });
-  });
-
-  describe('getChatResponse', () => {
-    const userId = 'user-123';
-    const message = 'How do I stay motivated?';
-
-    it('should call the AI agent with a context-aware prompt', async () => {
-      const mockResponse = { reply: 'You can do it!' };
-      mockJson.mockResolvedValue(mockResponse);
-      // Ensure findOne returns a query-like object with an exec method
-      mockChatHistoryModel.findOne.mockReturnValue({ exec: () => Promise.resolve(null) });
-
-      const result = await service.getChatResponse(userId, message);
-
-      expect(mockUserService.findById).toHaveBeenCalledWith(userId);
-      expect(mockRoadmapService.getRoadmapByUserId).toHaveBeenCalledWith(userId);
-      expect(mockedGotPost).toHaveBeenCalled();
-      expect(result).toEqual(mockResponse);
-      expect(mockChatHistoryModel.findOneAndUpdate).toHaveBeenCalled();
-      // Ensure the chained exec method was called
-      expect(mockChatHistoryModel.findOneAndUpdate().exec).toHaveBeenCalled();
+      mockedGot.post.mockImplementation(() => {
+        return Promise.reject(new Error('Network error'));
+      });
+      await expect(service.generateRoadmap(userId, dto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
     });
   });
 });

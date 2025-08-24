@@ -3,7 +3,7 @@ import { RoadmapService } from './roadmap.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Roadmap, Task } from './schemas/roadmap.schema';
-import { StreakService } from '../streak/streaks.service';
+import { StreakService } from '../streak/streak.service';
 import { NotFoundException } from '@nestjs/common';
 
 describe('RoadmapService', () => {

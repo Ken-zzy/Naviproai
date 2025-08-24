@@ -35,10 +35,10 @@ describe('ProgressController', () => {
 
   describe('getUserProgress', () => {
     it('should call the progress service and return progress data', async () => {
-      const mockReq = { user: { id: 'user-123' } };
+      const mockReq = { user: { userId: 'user-123', email: 'test@test.com' } };
       const result = await controller.getUserProgress(mockReq);
 
-      expect(service.getUserProgress).toHaveBeenCalledWith(mockReq.user.id);
+      expect(service.getUserProgress).toHaveBeenCalledWith(mockReq.user.userId);
       expect(result).toEqual({
         totalTasks: 10,
         completedTasks: 5,

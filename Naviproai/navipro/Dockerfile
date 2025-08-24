@@ -1,28 +1,26 @@
-# ---- Base Stage ----
-# Use a specific Node.js version for consistency.
-FROM node:20-alpine AS base
+# Stage 1: Builder
+# This stage installs all dependencies (including dev) and builds the app.
+FROM node:20-alpine AS builder
+
 WORKDIR /usr/src/app
 
-# ---- Dependencies Stage ----
-FROM base AS dependencies
-# Copy package.json and package-lock.json
 COPY package*.json ./
-# Install all dependencies, including devDependencies for the build step
-RUN npm install
+RUN npm install --legacy-peer-deps
 
-# ---- Build Stage ----
-FROM dependencies AS build
-# Copy the rest of the application source code
 COPY . .
-# Build the application
 RUN npm run build
 
-# ---- Production Stage ----
-FROM base AS production
-# Copy built artifacts and production node_modules from previous stages
-COPY --from=build /usr/src/app/dist ./dist
-COPY --from=dependencies /usr/src/app/node_modules ./node_modules
+# Stage 2: Production
+# This stage creates the final, lean image for production.
+FROM node:20-alpine AS production
+
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
+
+# Copy package.json and package-lock.json from the builder stage
+COPY --from=builder /usr/src/app/package*.json ./
+RUN npm ci --only=production --legacy-peer-deps
+COPY --from=builder /usr/src/app/dist ./dist
 
 EXPOSE 3000
-# Command to run the application
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main.js"]

@@ -32,17 +32,17 @@ describe('RoadmapController', () => {
 
   describe('getDailyTask', () => {
     it('should call the service to get the daily task for the authenticated user', async () => {
-      const mockReq = { user: { id: 'user-123' } };
+      const mockReq = { user: { userId: 'user-123', email: 'test@test.com' } };
       await controller.getDailyTask(mockReq);
-      expect(service.getDailyTask).toHaveBeenCalledWith(mockReq.user.id);
+      expect(service.getDailyTask).toHaveBeenCalledWith(mockReq.user.userId);
     });
   });
 
   describe('completeTask', () => {
     it('should call the service to complete a task for the authenticated user', async () => {
-      const mockReq = { user: { id: 'user-123' } };
+      const mockReq = { user: { userId: 'user-123', email: 'test@test.com' } };
       await controller.completeTask(mockReq, 'task-id-123');
-      expect(service.completeTask).toHaveBeenCalledWith(mockReq.user.id, 'task-id-123');
+      expect(service.completeTask).toHaveBeenCalledWith(mockReq.user.userId, 'task-id-123');
     });
   });
 });

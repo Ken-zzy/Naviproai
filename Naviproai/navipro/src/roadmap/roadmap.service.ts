@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Roadmap, Task, Week } from './schemas/roadmap.schema';
-import { StreakService } from '../streak/streaks.service';
+import { StreakService } from '../streak/streak.service';
 
 @Injectable()
 export class RoadmapService {
@@ -12,11 +12,10 @@ export class RoadmapService {
   ) {}
 
   async createOrUpdateRoadmap(userId: string, roadmapData: any): Promise<Roadmap> {
-    // Assuming roadmapData is the object from the AI containing a "months" array
     return this.roadmapModel.findOneAndUpdate(
       { userId },
       { userId, months: roadmapData.months },
-      { new: true, upsert: true }, // Create if it doesn't exist, otherwise update
+      { new: true, upsert: true },
     ).exec();
   }
 
@@ -30,7 +29,6 @@ export class RoadmapService {
       throw new NotFoundException('Roadmap not found for this user.');
     }
 
-    // Find the first uncompleted task
     for (const month of roadmap.months) {
       for (const week of month.weeks) {
         for (const task of week.daily_tasks) {
@@ -40,8 +38,7 @@ export class RoadmapService {
         }
       }
     }
-
-    return null; // All tasks are completed
+    return null;
   }
 
   async completeTask(userId: string, taskId: string): Promise<Roadmap> {
@@ -53,7 +50,7 @@ export class RoadmapService {
     let taskFound = false;
     for (const month of roadmap.months) {
       for (const week of month.weeks) {
-        const task = week.daily_tasks.find((t) => t.task_id === taskId);
+        const task = week.daily_tasks.find((t: Task) => t.task_id === taskId);
         if (task && !task.completed) {
           task.completed = true;
           task.completed_date = new Date();
@@ -68,9 +65,7 @@ export class RoadmapService {
       throw new NotFoundException(`Task with ID ${taskId} not found or already completed.`);
     }
 
-    // Update the user's streak
     await this.streakService.updateStreak(userId);
-
     return roadmap.save();
   }
 
@@ -80,16 +75,14 @@ export class RoadmapService {
       return null;
     }
 
-    // Find the first week with at least one uncompleted task
     for (const month of roadmap.months) {
       for (const week of month.weeks) {
-        const hasUncompletedTask = week.daily_tasks.some(task => !task.completed);
+        const hasUncompletedTask = week.daily_tasks.some((task: Task) => !task.completed);
         if (hasUncompletedTask) {
           return week;
         }
       }
     }
-
-    return null; // All tasks are completed
+    return null;
   }
 }

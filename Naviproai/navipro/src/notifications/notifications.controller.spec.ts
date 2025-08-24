@@ -33,9 +33,9 @@ describe('NotificationsController', () => {
 
   describe('getMyNotifications', () => {
     it('should call the service to find notifications for a user', async () => {
-      const mockReq = { user: { id: 'user-123' } };
+      const mockReq = { user: { userId: 'user-123', email: 'test@test.com' } };
       await controller.getMyNotifications(mockReq);
-      expect(service.findAllForUser).toHaveBeenCalledWith(mockReq.user.id);
+      expect(service.findAllForUser).toHaveBeenCalledWith(mockReq.user.userId);
     });
   });
 });

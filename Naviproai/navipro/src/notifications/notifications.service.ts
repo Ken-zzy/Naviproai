@@ -43,7 +43,10 @@ export class NotificationsService {
       try {
         await this.emailService.sendMail({ to: user.email, subject: 'New Notification from NaviPro.ai', text: newNotification.message });
       } catch (error) {
-        this.logger.error(`Failed to send email notification to ${user.email}`, error.stack);
+        this.logger.error(
+          `Failed to send email notification to ${user.email}`,
+          error instanceof Error ? error.stack : String(error),
+        );
       }
     }
 
@@ -51,7 +54,10 @@ export class NotificationsService {
       try {
         await this.pushService.send(user.pushTokens, { title: 'NaviPro.ai', body: newNotification.message });
       } catch (error) {
-        this.logger.error(`Failed to send push notification to user ${user.id}`, error.stack);
+        this.logger.error(
+          `Failed to send push notification to user ${user.id}`,
+          error instanceof Error ? error.stack : String(error),
+        );
       }
     }
 

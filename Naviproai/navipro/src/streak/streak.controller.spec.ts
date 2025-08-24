@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StreakController } from './streak.controller';
-import { StreakService } from './streaks.service';
+import { StreakService } from './streak.service';
 import { UpdateStreakTypeDto } from './dto/update-streak-type.dto';
 import { StreakType } from '../user/user.schema';
 

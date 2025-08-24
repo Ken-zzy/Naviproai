@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -25,17 +27,22 @@ describe('AuthController', () => {
     service = module.get<AuthService>(AuthService);
   });
 
-  it('should register a user', async () => {
-    const dto = { email: 'test@example.com', password: '123456' };
-    const result = await controller.register(dto);
-    expect(result).toEqual({ id: 1, email: 'test@example.com' });
-    expect(service.register).toHaveBeenCalledWith(dto);
+  describe('register', () => {
+    it('should call authService.register with the correct DTO', async () => {
+      const dto: RegisterDto = { name: 'Test User', email: 'test@example.com', password: '123456' };
+      await controller.register(dto);
+      expect(service.register).toHaveBeenCalledWith(dto);
+    });
   });
 
-  it('should login a user', async () => {
-    const dto = { email: 'test@example.com', password: '123456' };
-    const result = await controller.login(dto);
-    expect(result).toEqual({ access_token: 'fake-jwt-token' });
-    expect(service.validateUser).toHaveBeenCalledWith(dto.email, dto.password);
+  describe('login', () => {
+    it('should call authService.login after validating the user', async () => {
+      const dto: LoginDto = { email: 'test@example.com', password: '123456' };
+      const mockUser = { _id: '1', email: 'test@example.com' };
+      (service.validateUser as jest.Mock).mockResolvedValue(mockUser);
+      await controller.login(dto);
+      expect(service.validateUser).toHaveBeenCalledWith(dto.email, dto.password);
+      expect(service.login).toHaveBeenCalledWith(mockUser);
+    });
   });
 });

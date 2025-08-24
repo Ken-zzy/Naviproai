@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { StreakService } from './streaks.service';
+import { StreakService } from './streak.service';
 import { StreakController } from './streak.controller';
 import { User, UserSchema } from '../user/user.schema';
 import { AuthModule } from '../auth/auth.module';
