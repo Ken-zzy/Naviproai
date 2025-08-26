@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UnauthorizedException,
   Query,
+  Redirect,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
@@ -39,19 +40,18 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req: Request) {}
-  
+  async googleAuth() {}
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(@Req() req: Request) {
+    // The google strategy places the user on the request object.
+    // The service then handles creating a JWT.
+    return this.authService.handleGoogleLogin(req.user as any);
+  }
+
   @Get('verify-email')
   async verifyEmail(@Query('token') token: string) {
     // This handles the link sent to the user's email
     return this.authService.verifyEmail(token);
-  }
-
-  @Get('google/redirect')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: { user: any }) {
-    // The google strategy should place the user on the request object.
-    // The service then handles creating a JWT.
-    return this.authService.handleGoogleLogin(req.user);
   }
 }
