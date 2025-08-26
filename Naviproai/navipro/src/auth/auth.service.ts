@@ -7,6 +7,10 @@ import { User, AuthProvider } from '../user/user.schema';
 import { EmailService } from '../email/email.service';
 import * as crypto from 'crypto';
 
+export interface LoginResult {
+  access_token: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -28,7 +32,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: Omit<User, 'password'> & { _id: string }) {
+  async login(user: Omit<User, 'password'> & { _id: string }): Promise<LoginResult> {
     // The 'sub' (subject) of a JWT is typically the user's unique ID.
     const payload = { email: user.email, sub: user._id.toString() };
     return {
@@ -36,7 +40,7 @@ export class AuthService {
     };
   }
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto): Promise<LoginResult | { message: string }> {
     let existingUser = await this.userService.findByEmail(dto.email);
 
     if (existingUser) {
@@ -56,7 +60,7 @@ export class AuthService {
 
     const user = await this.userService.create({
       email: dto.email,
-      name: dto.email.split('@')[0], // Default name from email
+      name: dto.name,
       password: hashedPassword,
       verificationToken: verificationToken,
       providers: [AuthProvider.EMAIL],
@@ -101,7 +105,9 @@ export class AuthService {
     return { message: 'A new verification link has been sent to your email.' };
   }
 
-  async handleGoogleLogin(profile: { googleId: string; email: string; name: string }) {
+  async handleGoogleLogin(
+    profile: { googleId: string; email: string; name: string },
+  ): Promise<LoginResult> {
     let user = await this.userService.findByEmail(profile.email);
 
     if (user) {

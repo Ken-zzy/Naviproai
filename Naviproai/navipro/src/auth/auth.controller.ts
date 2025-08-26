@@ -9,10 +9,11 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
-import { AuthService } from './auth.service';
+import { AuthService,LoginResult } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -28,7 +29,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto): Promise<LoginResult> {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -39,6 +40,12 @@ export class AuthController {
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth(@Req() req: Request) {}
+  
+  @Get('verify-email')
+  async verifyEmail(@Query('token') token: string) {
+    // This handles the link sent to the user's email
+    return this.authService.verifyEmail(token);
+  }
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
