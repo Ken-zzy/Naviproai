@@ -30,10 +30,10 @@ export class User extends Document {
   @Prop({ default: false })
   isVerified!: boolean;
 
-  @Prop({ default: null })
+  @Prop({ type: String, required: false, default: null })
   verificationToken!: string | null;
 
-  @Prop({ default: null, unique: true, sparse: true })
+  @Prop({ type: String, default: null, unique: true, sparse: true })
   googleId!: string | null;
 
   @Prop({ enum: StreakType, default: StreakType.DAILY })
