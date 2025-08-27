@@ -1,89 +1,44 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Notification } from './schemas/notification.schema';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UserService } from '../user/user.service';
-import { EmailService } from '../email/email.service';
-import { PushNotificationsService } from '../push-notifications/push-notifications.service';
-
-interface DeliveryOptions {
-  sendEmail?: boolean;
-  sendPush?: boolean;
-}
+import {
+  Notification,
+  NotificationDocument,
+} from './schemas/notification.schema';
 
 @Injectable()
 export class NotificationsService {
-  private readonly logger = new Logger(NotificationsService.name);
-
   constructor(
     @InjectModel(Notification.name)
-    private readonly notificationModel: Model<Notification>,
-    private readonly userService: UserService,
-    private readonly emailService: EmailService,
-    private readonly pushService: PushNotificationsService,
+    private readonly notificationModel: Model<NotificationDocument>,
   ) {}
 
-  async create(
-    createNotificationDto: CreateNotificationDto,
-    options: DeliveryOptions = {},
-  ): Promise<Notification> {
-    // 1. Create the in-app notification and save it to the database.
-    const newNotification = new this.notificationModel(createNotificationDto);
-    await newNotification.save();
-
-    const user = await this.userService.findById(createNotificationDto.userId);
-    if (!user) {
-      this.logger.warn(`User not found for notification: ${createNotificationDto.userId}`);
-      return newNotification;
-    }
-
-    // 2. Dispatch to other channels based on options
-    if (options.sendEmail && user.email) {
-      try {
-        await this.emailService.sendMail({ to: user.email, subject: 'New Notification from NaviPro.ai', text: newNotification.message });
-      } catch (error) {
-        this.logger.error(
-          `Failed to send email notification to ${user.email}`,
-          error instanceof Error ? error.stack : String(error),
-        );
-      }
-    }
-
-    if (options.sendPush && user.pushTokens?.length > 0) {
-      try {
-        await this.pushService.send(user.pushTokens, { title: 'NaviPro.ai', body: newNotification.message });
-      } catch (error) {
-        this.logger.error(
-          `Failed to send push notification to user ${user.id}`,
-          error instanceof Error ? error.stack : String(error),
-        );
-      }
-    }
-
-    return newNotification;
+  async findAllForUser(userId: string): Promise<NotificationDocument[]> {
+    return this.notificationModel.find({ userId }).sort({ createdAt: -1 }).exec();
   }
 
-  async findAllForUser(userId: string): Promise<Notification[]> {
+  async create(data: { userId: string; message: string; type?: string }) {
+    const newNotification = new this.notificationModel(data);
+    return newNotification.save();
+  }
+
+  async markAsRead(
+    notificationId: string,
+    userId: string,
+  ): Promise<NotificationDocument | null> {
     return this.notificationModel
-      .find({ userId })
-      .sort({ createdAt: -1 })
-      .limit(50) // Return the 50 most recent notifications
+      .findOneAndUpdate(
+        { _id: notificationId, userId },
+        { isRead: true },
+        { new: true },
+      )
       .exec();
   }
 
-  async markAsRead(notificationId: string, userId: string): Promise<Notification | null> {
-    return this.notificationModel.findOneAndUpdate(
-      { _id: notificationId, userId }, // Ensure user can only mark their own notifications
-      { $set: { read: true } },
-      { new: true },
-    ).exec();
-  }
-
-  async markAllAsRead(userId: string) {
-    return this.notificationModel.updateMany(
-      { userId, read: false },
-      { $set: { read: true } },
-    ).exec();
+  async markAllAsRead(
+    userId: string,
+  ): Promise<{ acknowledged: boolean; modifiedCount: number }> {
+    const result = await this.notificationModel.updateMany({ userId, isRead: false }, { isRead: true }).exec();
+    return { acknowledged: result.acknowledged, modifiedCount: result.modifiedCount };
   }
 }
