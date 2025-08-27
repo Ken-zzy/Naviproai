@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -22,7 +22,7 @@ import { GoogleStrategy } from './google.strategy';
         signOptions: { expiresIn: configService.jwtExpiresIn },
       }),
     }),
-    UserModule,
+    forwardRef(() => UserModule),
     EmailModule,
   ],
   providers: [AuthService, JwtStrategy, GoogleStrategy],
