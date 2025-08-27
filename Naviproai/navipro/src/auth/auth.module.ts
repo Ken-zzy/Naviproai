@@ -27,5 +27,6 @@ import { GoogleStrategy } from './google.strategy';
   ],
   providers: [AuthService, JwtStrategy, GoogleStrategy],
   controllers: [AuthController],
+  exports: [AuthService, JwtModule, PassportModule],
 })
 export class AuthModule {}
