@@ -2,15 +2,15 @@ import {
   Body,
   Controller,
   Get,
-  Patch,
-  UseGuards,
-  Req,
   NotFoundException,
+  Patch,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { StreakService } from './streak.service';
-import { UpdateStreakTypeDto } from './dto/update-streak-type.dto';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
+import { StreakService } from './streak.service';
+import { UpdateStreakTypeDto } from './dto/update-streak-type.dto';
 
 @Controller('streak')
 @UseGuards(AuthGuard('jwt'))

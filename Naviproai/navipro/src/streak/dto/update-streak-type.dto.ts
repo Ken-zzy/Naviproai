@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum } from 'class-validator';
 import { StreakType } from '../../user/user.schema';
 
 export class UpdateStreakTypeDto {

@@ -19,14 +19,14 @@ export class NotificationsController {
   @Get()
   async getMyNotifications(@Req() req: Request) {
     // The JWT strategy attaches the user payload to the request.
-    // The spec file indicates the user ID is on `req.user.userId`.
-    const userId = (req.user as any).userId;
+    // The user's ID is in the 'sub' (subject) claim of the JWT payload.
+    const userId = (req.user as any).sub;
     return this.notificationsService.findAllForUser(userId);
   }
 
   @Patch(':id/read')
   async markAsRead(@Param('id') notificationId: string, @Req() req: Request) {
-    const userId = (req.user as any).userId;
+    const userId = (req.user as any).sub;
     const notification = await this.notificationsService.markAsRead(
       notificationId,
       userId,
@@ -41,7 +41,7 @@ export class NotificationsController {
 
   @Patch('read-all')
   async markAllAsRead(@Req() req: Request) {
-    const userId = (req.user as any).userId;
+    const userId = (req.user as any).sub;
     return this.notificationsService.markAllAsRead(userId);
   }
 }
