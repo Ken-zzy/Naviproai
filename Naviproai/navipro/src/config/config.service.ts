@@ -3,81 +3,45 @@ import { ConfigService as NestConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ConfigService {
-  constructor(private nestConfig: NestConfigService) {}
-
-  get port(): number {
-    return this.nestConfig.get<number>('PORT', 3000);
-  }
-
-  get databaseUrl(): string {
-    return this.nestConfig.get<string>('DATABASE_URL', '');
-  }
+  constructor(private nestConfigService: NestConfigService) {}
 
   get jwtSecret(): string {
-    return this.nestConfig.get<string>('JWT_SECRET', 'default-secret');
+    return this.nestConfigService.get<string>('JWT_SECRET')!;
   }
 
   get jwtExpiresIn(): string {
-    return this.nestConfig.get<string>('JWT_EXPIRES_IN', '60m');
-  }
-
-  get aiAgentUrl(): string {
-    return this.nestConfig.get<string>('AI_AGENT_URL', '');
-  }
-
-  get aiAgentKey(): string {
-    return this.nestConfig.get<string>('AI_AGENT_KEY', '');
-  }
-
-  get emailHost(): string {
-    return this.nestConfig.get<string>('EMAIL_HOST', '');
-  }
-
-  get emailPort(): number {
-    return this.nestConfig.get<number>('EMAIL_PORT', 587);
-  }
-
-  get emailSecure(): boolean {
-    return this.nestConfig.get<boolean>('EMAIL_SECURE', false);
-  }
-
-  get emailUser(): string {
-    return this.nestConfig.get<string>('EMAIL_USER', '');
-  }
-
-  get emailPass(): string {
-    return this.nestConfig.get<string>('EMAIL_PASS', '');
+    return this.nestConfigService.get<string>('JWT_EXPIRES_IN')!;
   }
 
   get googleClientId(): string {
-    return this.nestConfig.get<string>('GOOGLE_CLIENT_ID', '');
+    return this.nestConfigService.get<string>('GOOGLE_CLIENT_ID')!;
   }
 
   get googleClientSecret(): string {
-    return this.nestConfig.get<string>('GOOGLE_CLIENT_SECRET', '');
+    return this.nestConfigService.get<string>('GOOGLE_CLIENT_SECRET')!;
   }
 
   get googleCallbackUrl(): string {
-    return this.nestConfig.get<string>('GOOGLE_CALLBACK_URL', '');
+    return this.nestConfigService.get<string>('GOOGLE_CALLBACK_URL')!;
   }
 
-  get backendUrl(): string {
-    return this.nestConfig.get<string>('BACKEND_URL', 'http://localhost:3000');
+  get mongodbUri(): string {
+    return this.nestConfigService.get<string>('MONGODB_URI')!;
   }
 
   get emailFrom(): string {
-    return this.nestConfig.get<string>('EMAIL_FROM', 'noreply@localhost');
+    return this.nestConfigService.get<string>('EMAIL_FROM')!;
   }
 
-  get youtubeApiKey(): string | undefined {
-    return this.nestConfig.get<string>('YOUTUBE_API_KEY');
+  get awsAccessKeyId(): string {
+    return this.nestConfigService.get<string>('AWS_ACCESS_KEY_ID')!;
   }
 
-  get oneSignalAppId(): string | undefined {
-    return this.nestConfig.get<string>('ONESIGNAL_APP_ID');
+  get awsSecretAccessKey(): string {
+    return this.nestConfigService.get<string>('AWS_SECRET_ACCESS_KEY')!;
   }
 
-  get oneSignalApiKey(): string | undefined {
-    return this.nestConfig.get<string>('ONESIGNAL_API_KEY');
+  get awsRegion(): string {
+    return this.nestConfigService.get<string>('AWS_REGION')!;
   }
 }
