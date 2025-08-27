@@ -44,4 +44,53 @@ export class ConfigService {
   get awsRegion(): string {
     return this.nestConfigService.get<string>('AWS_REGION')!;
   }
+
+  get port(): number {
+    return this.nestConfigService.get<number>('PORT')!;
+  }
+
+  get backendUrl(): string {
+    return this.nestConfigService.get<string>('BACKEND_URL')!;
+  }
+
+  get emailHost(): string {
+    return this.nestConfigService.get<string>('EMAIL_HOST')!;
+  }
+
+  get emailPort(): number {
+    return this.nestConfigService.get<number>('EMAIL_PORT')!;
+  }
+
+  get emailSecure(): boolean {
+    // The value from .env will be a string 'true' or 'false'
+    return this.nestConfigService.get<string>('EMAIL_SECURE') === 'true';
+  }
+
+  get emailUser(): string {
+    return this.nestConfigService.get<string>('EMAIL_USER')!;
+  }
+
+  get emailPass(): string {
+    return this.nestConfigService.get<string>('EMAIL_PASS')!;
+  }
+
+  get aiAgentUrl(): string {
+    return this.nestConfigService.get<string>('AI_AGENT_URL')!;
+  }
+
+  get aiAgentKey(): string {
+    return this.nestConfigService.get<string>('AI_AGENT_KEY')!;
+  }
+
+  get oneSignalAppId(): string {
+    return this.nestConfigService.get<string>('ONE_SIGNAL_APP_ID')!;
+  }
+
+  get oneSignalApiKey(): string {
+    return this.nestConfigService.get<string>('ONE_SIGNAL_API_KEY')!;
+  }
+
+  get youtubeApiKey(): string {
+    return this.nestConfigService.get<string>('YOUTUBE_API_KEY')!;
+  }
 }
