@@ -15,8 +15,8 @@ export class ProgressController {
   constructor(private readonly progressService: ProgressService) {}
 
   @Get()
-  async getUserProgress(@Request() req: AuthenticatedRequest) {
+  async getProgress(@Request() req: AuthenticatedRequest) {
     const userId = req.user.userId;
-    return this.progressService.getUserProgress(userId);
+    return this.progressService.getProgress(userId);
   }
 }

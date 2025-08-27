@@ -7,7 +7,7 @@ describe('ProgressController', () => {
   let service: ProgressService;
 
   const mockProgressService = {
-    getUserProgress: jest.fn().mockResolvedValue({
+    getProgress: jest.fn().mockResolvedValue({
       totalTasks: 10,
       completedTasks: 5,
       percentage: 50,
@@ -33,12 +33,12 @@ describe('ProgressController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('getUserProgress', () => {
+  describe('getProgress', () => {
     it('should call the progress service and return progress data', async () => {
       const mockReq = { user: { userId: 'user-123', email: 'test@test.com' } };
-      const result = await controller.getUserProgress(mockReq);
+      const result = await controller.getProgress(mockReq as any);
 
-      expect(service.getUserProgress).toHaveBeenCalledWith(mockReq.user.userId);
+      expect(service.getProgress).toHaveBeenCalledWith(mockReq.user.userId);
       expect(result).toEqual({
         totalTasks: 10,
         completedTasks: 5,

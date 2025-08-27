@@ -20,6 +20,9 @@ export const TaskSchema = SchemaFactory.createForClass(Task);
 
 @Schema({ _id: false })
 export class Week {
+  @Prop({ required: true })
+  focus!: string;
+
   @Prop({ type: [TaskSchema], default: [] })
   daily_tasks!: Task[];
 }

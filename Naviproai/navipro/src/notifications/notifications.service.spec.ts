@@ -68,7 +68,7 @@ describe('NotificationsService', () => {
       const user = { email: 'test@test.com', pushTokens: ['token1'] };
       mockUserService.findById.mockResolvedValue(user);
 
-      await service.create(dto, { sendEmail: true, sendPush: true });
+      await service.create(dto);
 
       expect(notificationModel).toHaveBeenCalledWith(dto);
       expect(emailService.sendMail).toHaveBeenCalled();

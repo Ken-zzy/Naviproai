@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
-import { NotificationType } from '../schemas/notification.schema';
+import { Notification } from '../schemas/notification.schema';
 
 export class CreateNotificationDto {
   @IsString()
@@ -10,6 +10,5 @@ export class CreateNotificationDto {
   @IsNotEmpty()
   message!: string;
 
-  @IsEnum(NotificationType)
-  type!: NotificationType;
+  type!: Notification;
 }
