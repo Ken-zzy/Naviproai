@@ -9,8 +9,8 @@ describe('StreakController', () => {
   let service: StreakService;
 
   const mockStreakService = {
-    getStreak: jest.fn().mockResolvedValue({ currentStreak: 5, longestStreak: 10, streakType: 'daily' }),
-    setStreakType: jest.fn().mockImplementation((userId, streakType) => Promise.resolve({ streakType })),
+    getStreak: jest.fn(),
+    setStreakType: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -33,19 +33,19 @@ describe('StreakController', () => {
   });
 
   describe('getStreak', () => {
-    it('should call the service to get the streak for the authenticated user', async () => {
-      const mockReq = { user: { id: 'user-123' } };
-      await controller.getStreak(mockReq);
-      expect(service.getStreak).toHaveBeenCalledWith(mockReq.user.id);
+    it('should call the service to get a streak', async () => {
+      const mockReq = { user: { sub: 'user-id-123' } };
+      await controller.getStreak(mockReq as any);
+      expect(service.getStreak).toHaveBeenCalledWith(mockReq.user.sub);
     });
   });
 
   describe('setStreakType', () => {
-    it('should call the service to set the streak type for the authenticated user', async () => {
-      const mockReq = { user: { id: 'user-123' } };
+    it('should call the service to set the streak type', async () => {
+      const mockReq = { user: { sub: 'user-id-123' } };
       const dto: UpdateStreakTypeDto = { streakType: StreakType.WEEKLY };
-      await controller.setStreakType(mockReq, dto);
-      expect(service.setStreakType).toHaveBeenCalledWith(mockReq.user.id, dto.streakType);
+      await controller.setStreakType(mockReq as any, dto);
+      expect(service.setStreakType).toHaveBeenCalledWith(mockReq.user.sub, dto.streakType);
     });
   });
 });
