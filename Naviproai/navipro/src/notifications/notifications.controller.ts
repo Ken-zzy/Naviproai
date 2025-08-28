@@ -4,12 +4,19 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import type { Request } from 'express';
 import { NotificationsService } from './notifications.service';
+import { User } from '../user/user.decorator';
+
+// Define a type for the user payload attached by the JWT strategy.
+// This makes the code more type-safe and self-documenting.
+interface AuthenticatedUser {
+  sub: string; // 'sub' is the standard claim for subject (user ID) in a JWT
+  email: string;
+  // Add other properties from your JWT payload if they exist
+}
 
 @Controller('notifications')
 @UseGuards(AuthGuard('jwt'))
@@ -17,19 +24,18 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  async getMyNotifications(@Req() req: Request) {
-    // The JWT strategy attaches the user payload to the request.
-    // The user's ID is in the 'sub' (subject) claim of the JWT payload.
-    const userId = (req.user as any).sub;
-    return this.notificationsService.findAllForUser(userId);
+  async getMyNotifications(@User() user: AuthenticatedUser) {
+    return this.notificationsService.findAllForUser(user.sub);
   }
 
   @Patch(':id/read')
-  async markAsRead(@Param('id') notificationId: string, @Req() req: Request) {
-    const userId = (req.user as any).sub;
+  async markAsRead(
+    @Param('id') notificationId: string,
+    @User() user: AuthenticatedUser,
+  ) {
     const notification = await this.notificationsService.markAsRead(
       notificationId,
-      userId,
+      user.sub,
     );
     if (!notification) {
       throw new NotFoundException(
@@ -40,8 +46,7 @@ export class NotificationsController {
   }
 
   @Patch('read-all')
-  async markAllAsRead(@Req() req: Request) {
-    const userId = (req.user as any).sub;
-    return this.notificationsService.markAllAsRead(userId);
+  async markAllAsRead(@User() user: AuthenticatedUser) {
+    return this.notificationsService.markAllAsRead(user.sub);
   }
 }
