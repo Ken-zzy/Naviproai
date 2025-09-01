@@ -12,7 +12,13 @@ async function bootstrap() {
   const port = configService.port || 3000;
 
   app.enableCors();
-  app.use(helmet());
+  app.use(
+    helmet({
+      xPoweredBy: false, // Explicitly disable x-powered-by
+      xFrameOptions: false, // Disable the old x-frame-options header
+      contentSecurityPolicy: false, // Disable CSP as requested by the user report
+    }),
+  );
   app.use(compression());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 

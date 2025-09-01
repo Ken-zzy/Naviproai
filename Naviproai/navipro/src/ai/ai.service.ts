@@ -26,9 +26,6 @@ export class AiService implements OnModuleInit {
     // Dynamically import got to avoid issues with CommonJS/ESM module resolution and jest mocking.
     const { default: got } = await import('got');
     this.gotInstance = got.extend({
-        headers: {
-            Authorization: `Bearer ${this.configService.aiAgentKey}`,
-        },
         timeout: { request: 30000 }, // 30 second timeout
         retry: {
             limit: 3,

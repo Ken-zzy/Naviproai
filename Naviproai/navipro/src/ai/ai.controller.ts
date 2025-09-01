@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -22,6 +23,13 @@ type RequestUser = User & { _id: Types.ObjectId };
 export class AiController {
   private readonly logger = new Logger(AiController.name);
   constructor(private readonly aiService: AiService) {}
+
+  @Get('health')
+  @HttpCode(HttpStatus.OK)
+  async checkHealth() {
+    this.logger.log('Checking AI agent health');
+    return this.aiService.checkHealth();
+  }
 
   @Post('generate-roadmap')
   @HttpCode(HttpStatus.OK)
