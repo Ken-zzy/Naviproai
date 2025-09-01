@@ -100,6 +100,22 @@
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^got$": "<rootDir>/__mocks__/got.ts"
+    },
+    "overrides": {
+      "got": "^12.0.0" 
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
