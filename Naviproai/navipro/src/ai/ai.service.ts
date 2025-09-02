@@ -26,12 +26,16 @@ export class AiService implements OnModuleInit {
     // Dynamically import got to avoid issues with CommonJS/ESM module resolution and jest mocking.
     const { default: got } = await import('got');
     this.gotInstance = got.extend({
-        timeout: { request: 30000 }, // 30 second timeout
-        retry: {
-            limit: 3,
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-            statusCodes: [408, 413, 429, 500, 502, 503, 504],
-        },
+      headers: {
+        Authorization: `Bearer ${this.configService.aiAgentKey}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: { request: 30000 }, // 30 second timeout
+      retry: {
+        limit: 3,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+        statusCodes: [408, 413, 429, 500, 502, 503, 504],
+      },
     });
   }
 
@@ -42,32 +46,21 @@ export class AiService implements OnModuleInit {
   ): Promise<T> {
     const url = `${this.configService.aiAgentUrl}${endpoint}`;
 
+    this.logger.debug(`Calling: ${method.toUpperCase()} ${url}`);
+    this.logger.debug(`Payload: ${JSON.stringify(options, null, 2)}`);
+
     try {
-      let responsePromise;
-      switch (method) {
-        case 'get':
-          responsePromise = this.gotInstance.get(url, options);
-          break;
-        case 'post':
-          responsePromise = this.gotInstance.post(url, options);
-          break;
-        case 'patch':
-          responsePromise = this.gotInstance.patch(url, options);
-          break;
-      }
-      const response = await responsePromise.json<T>();
-      this.logger.log(
-        `Successfully called AI agent at ${method.toUpperCase()} ${endpoint}`,
-      );
-      return response;
+      const response = await this.gotInstance[method](url, options);
+      const jsonResponse = await response.json();
+
+      this.logger.debug(`Response: ${JSON.stringify(jsonResponse, null, 2)}`);
+      return jsonResponse as T;
     } catch (error) {
-      this.logger.error(
-        `Failed to call AI agent at ${method.toUpperCase()} ${endpoint}`,
-        error instanceof Error ? error.stack : String(error),
-      );
-      throw new InternalServerErrorException(
-        'Failed to communicate with AI agent.',
-      );
+      this.logger.error(`Error: ${error.message}`);
+      if (error.response) {
+        this.logger.error(`Response body: ${JSON.stringify(error.response.body, null, 2)}`);
+      }
+      throw new InternalServerErrorException('Failed to communicate with AI agent.');
     }
   }
 
