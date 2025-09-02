@@ -85,8 +85,8 @@ export class AiService implements OnModuleInit {
     this.logger.log(
       `Generating roadmap for role: ${targetRole} from level: ${currentLevel}`,
     );
-    const response = await this._callAiAgent<any>('post', `/api/generate_roadmap/${userId}`, {
-      json: { targetRole, currentLevel },
+    const response = await this._callAiAgent<any>('post', '/api/generate_roadmap', {
+      json: { userId, targetRole, currentLevel },
     });
     this.logger.log('Successfully received roadmap from AI agent.');
     return this.roadmapService.createOrUpdateRoadmap(userId, response);
