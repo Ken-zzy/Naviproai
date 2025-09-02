@@ -27,7 +27,6 @@ export class AiService implements OnModuleInit {
     const { default: got } = await import('got');
     this.gotInstance = got.extend({
       headers: {
-        Authorization: `Bearer ${this.configService.aiAgentKey}`,
         'Content-Type': 'application/json',
       },
       timeout: { request: 30000 }, // 30 second timeout
@@ -50,17 +49,34 @@ export class AiService implements OnModuleInit {
     this.logger.debug(`Payload: ${JSON.stringify(options, null, 2)}`);
 
     try {
-      const response = await this.gotInstance[method](url, options);
-      const jsonResponse = await response.json();
-
-      this.logger.debug(`Response: ${JSON.stringify(jsonResponse, null, 2)}`);
-      return jsonResponse as T;
-    } catch (error) {
-      this.logger.error(`Error: ${error.message}`);
-      if (error.response) {
-        this.logger.error(`Response body: ${JSON.stringify(error.response.body, null, 2)}`);
+      let responsePromise;
+      switch (method) {
+        case 'get':
+          responsePromise = this.gotInstance.get(url, options);
+          break;
+        case 'post':
+          responsePromise = this.gotInstance.post(url, options);
+          break;
+        case 'patch':
+          responsePromise = this.gotInstance.patch(url, options);
+          break;
       }
-      throw new InternalServerErrorException('Failed to communicate with AI agent.');
+      const jsonResponse = await responsePromise.json<T>();
+      this.logger.debug(`Response: ${JSON.stringify(jsonResponse, null, 2)}`);
+      return jsonResponse;
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(`Error: ${error.message}`);
+        if ('response' in error && error.response) {
+          const httpError = error as { response: { body: any } };
+          this.logger.error(`Response body: ${JSON.stringify(httpError.response.body, null, 2)}`);
+        }
+      } else {
+        this.logger.error('An unknown error occurred', String(error));
+      }
+      throw new InternalServerErrorException(
+        'Failed to communicate with AI agent.',
+      );
     }
   }
 
