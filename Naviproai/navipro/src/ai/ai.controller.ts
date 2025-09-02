@@ -7,6 +7,7 @@ import {
   Post,
   Logger,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { ChatDto } from './dto/chat.dto';
@@ -38,6 +39,10 @@ export class AiController {
     @GetUser() user: RequestUser,
     @Body() generateRoadmapDto: GenerateRoadmapDto,
   ) {
+    if (!user || !user._id) {
+      this.logger.error('User not found in request for generate-roadmap');
+      throw new UnauthorizedException('User not found');
+    }
     const userId = user._id.toString();
     this.logger.log(`Received request to generate roadmap for user: ${userId}`);
     return this.aiService.generateRoadmap(userId, generateRoadmapDto);
@@ -47,6 +52,10 @@ export class AiController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
   async chat(@GetUser() user: RequestUser, @Body() chatDto: ChatDto) {
+    if (!user || !user._id) {
+      this.logger.error('User not found in request for chat');
+      throw new UnauthorizedException('User not found');
+    }
     const userId = user._id.toString();
     this.logger.log(`Received chat message from user: ${userId}`);
     return this.aiService.getChatResponse(userId, chatDto.message);
