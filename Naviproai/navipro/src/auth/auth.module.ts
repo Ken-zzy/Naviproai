@@ -10,6 +10,7 @@ import { ConfigService } from '../config/config.service';
 import { EmailModule } from '../email/email.module';
 import { GoogleStrategy } from './google.strategy';
 
+@Global()
 @Module({
   imports: [
     PassportModule,

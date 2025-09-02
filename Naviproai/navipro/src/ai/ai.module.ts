@@ -4,13 +4,13 @@ import { AiController } from './ai.controller';
 import { AiService } from './ai.service';
 import { ConfigModule } from '../config/config.module';
 import { RoadmapModule } from '../roadmap/roadmap.module';
-import { AuthModule } from '../auth/auth.module';
+
 import { UserModule } from '../user/user.module';
 import { ChatHistory, ChatHistorySchema } from './schemas/chat-history.schema';
 
 @Module({
   imports: [
-    ConfigModule, RoadmapModule, AuthModule, UserModule,
+    ConfigModule, RoadmapModule, UserModule,
     MongooseModule.forFeature([{ name: ChatHistory.name, schema: ChatHistorySchema }]),
   ],
   controllers: [AiController],
