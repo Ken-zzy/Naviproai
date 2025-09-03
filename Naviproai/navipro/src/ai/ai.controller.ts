@@ -16,6 +16,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { User as GetUser } from '../user/user.decorator';
 import type { User } from '../user/user.schema';
 import type { Types } from 'mongoose';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 // A more specific type for the user object from the request, including the _id.
 type RequestUser = User & { _id: Types.ObjectId };
@@ -34,7 +35,7 @@ export class AiController {
 
   @Post('generate-roadmap')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(ApiKeyGuard)
   async generateRoadmap(
     @GetUser() user: RequestUser,
     @Body() generateRoadmapDto: GenerateRoadmapDto,
