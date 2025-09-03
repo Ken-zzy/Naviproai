@@ -37,7 +37,9 @@ describe('AiService', () => {
   const mockRoadmapService = {
     createOrUpdateRoadmap: jest
       .fn()
-      .mockImplementation((userId, data) => Promise.resolve({ userId, ...data })),
+      .mockImplementation((userId, data) =>
+        Promise.resolve({ userId, ...data }),
+      ),
     getRoadmapByUserId: jest.fn().mockResolvedValue({ months: [] }),
   };
   const mockUserService = {
@@ -62,7 +64,10 @@ describe('AiService', () => {
         { provide: ConfigService, useValue: mockConfigService },
         { provide: RoadmapService, useValue: mockRoadmapService },
         { provide: UserService, useValue: mockUserService },
-        { provide: getModelToken(ChatHistory.name), useValue: mockChatHistoryModel },
+        {
+          provide: getModelToken(ChatHistory.name),
+          useValue: mockChatHistoryModel,
+        },
       ],
     }).compile();
 
@@ -80,7 +85,7 @@ describe('AiService', () => {
     it('should call got.post with correct parameters and return data', async () => {
       const mockResponse = { roadmap: 'This is the roadmap' };
       const mockJsonResponse = jest.fn().mockResolvedValue(mockResponse);
-      
+
       // Mock the extended instance's post method
       mockExtendedGot.post.mockReturnValue({
         json: mockJsonResponse,
@@ -92,18 +97,21 @@ describe('AiService', () => {
         'http://fake-url.com/api/generate_roadmap',
         {
           json: { targetRole: 'dev', currentLevel: 'beginner' },
-        }
+        },
       );
       expect(mockJsonResponse).toHaveBeenCalled();
-      expect(mockRoadmapService.createOrUpdateRoadmap).toHaveBeenCalledWith(userId, mockResponse);
+      expect(mockRoadmapService.createOrUpdateRoadmap).toHaveBeenCalledWith(
+        userId,
+        mockResponse,
+      );
       expect(result).toEqual({ userId, ...mockResponse });
     });
 
     it('should throw an InternalServerErrorException on failure', async () => {
       mockExtendedGot.post.mockRejectedValue(new Error('Network error'));
-      
+
       await expect(service.generateRoadmap(userId, dto)).rejects.toThrow(
-        InternalServerErrorException
+        InternalServerErrorException,
       );
     });
   });

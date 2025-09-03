@@ -15,9 +15,15 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: {
-            register: jest.fn().mockResolvedValue({ id: 1, email: 'test@example.com' }),
-            login: jest.fn().mockResolvedValue({ access_token: 'fake-jwt-token' }),
-            validateUser: jest.fn().mockResolvedValue({ _id: '1', email: 'test@example.com' }),
+            register: jest
+              .fn()
+              .mockResolvedValue({ id: 1, email: 'test@example.com' }),
+            login: jest
+              .fn()
+              .mockResolvedValue({ access_token: 'fake-jwt-token' }),
+            validateUser: jest
+              .fn()
+              .mockResolvedValue({ _id: '1', email: 'test@example.com' }),
           },
         },
       ],
@@ -29,7 +35,11 @@ describe('AuthController', () => {
 
   describe('register', () => {
     it('should call authService.register with the correct DTO', async () => {
-      const dto: RegisterDto = { name: 'Test User', email: 'test@example.com', password: '123456' };
+      const dto: RegisterDto = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: '123456',
+      };
       await controller.register(dto);
       expect(service.register).toHaveBeenCalledWith(dto);
     });
@@ -41,7 +51,10 @@ describe('AuthController', () => {
       const mockUser = { _id: '1', email: 'test@example.com' };
       (service.validateUser as jest.Mock).mockResolvedValue(mockUser);
       await controller.login(dto);
-      expect(service.validateUser).toHaveBeenCalledWith(dto.email, dto.password);
+      expect(service.validateUser).toHaveBeenCalledWith(
+        dto.email,
+        dto.password,
+      );
       expect(service.login).toHaveBeenCalledWith(mockUser);
     });
   });

@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RoadmapService } from './roadmap.service';
 
@@ -21,7 +28,10 @@ export class RoadmapController {
   }
 
   @Post('complete-task/:taskId')
-  async completeTask(@Request() req: AuthenticatedRequest, @Param('taskId') taskId: string) {
+  async completeTask(
+    @Request() req: AuthenticatedRequest,
+    @Param('taskId') taskId: string,
+  ) {
     const userId = req.user.userId;
     return this.roadmapService.completeTask(userId, taskId);
   }

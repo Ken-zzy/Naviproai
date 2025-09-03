@@ -15,10 +15,12 @@ export class ProgressService {
     let totalTasks = 0;
     let completedTasks = 0;
 
-    roadmap.months.forEach(month => {
-      month.weeks.forEach(week => {
+    roadmap.months.forEach((month) => {
+      month.weeks.forEach((week) => {
         totalTasks += week.daily_tasks.length;
-        completedTasks += week.daily_tasks.filter((task: Task) => task.completed).length;
+        completedTasks += week.daily_tasks.filter(
+          (task: Task) => task.completed,
+        ).length;
       });
     });
 

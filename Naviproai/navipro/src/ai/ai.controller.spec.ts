@@ -38,10 +38,16 @@ describe('AiController', () => {
       const mockUser = {
         _id: new Types.ObjectId('65a9a7b9d71a8f8a2f8a8a8a'),
       };
-      const dto: GenerateRoadmapDto = { targetRole: 'dev', currentLevel: 'beginner' };
+      const dto: GenerateRoadmapDto = {
+        targetRole: 'dev',
+        currentLevel: 'beginner',
+      };
       mockAiService.generateRoadmap.mockResolvedValue({ success: true });
       await controller.generateRoadmap(mockUser as any, dto);
-      expect(service.generateRoadmap).toHaveBeenCalledWith(mockUser._id.toString(), dto);
+      expect(service.generateRoadmap).toHaveBeenCalledWith(
+        mockUser._id.toString(),
+        dto,
+      );
     });
   });
 
@@ -53,7 +59,10 @@ describe('AiController', () => {
       const dto: ChatDto = { message: 'Hello' };
       mockAiService.getChatResponse.mockResolvedValue({ reply: 'Hi' });
       await controller.chat(mockUser as any, dto);
-      expect(service.getChatResponse).toHaveBeenCalledWith(mockUser._id.toString(), dto.message);
+      expect(service.getChatResponse).toHaveBeenCalledWith(
+        mockUser._id.toString(),
+        dto.message,
+      );
     });
   });
 });

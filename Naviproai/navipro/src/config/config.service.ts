@@ -78,7 +78,9 @@ export class ConfigService {
     return this.nestConfigService.get<string>('AI_AGENT_URL')!;
   }
 
-  
+  get aiAgentKey(): string {
+    return this.nestConfigService.get<string>('AI_AGENT_KEY')!;
+  }
 
   get oneSignalAppId(): string {
     return this.nestConfigService.get<string>('ONE_SIGNAL_APP_ID')!;

@@ -44,7 +44,9 @@ describe('StreakService', () => {
         lastStreakIncrement: null,
         save: jest.fn().mockResolvedValue(this),
       };
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(mockUser) });
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(mockUser),
+      });
 
       await service.updateStreak('userId');
 
@@ -62,10 +64,12 @@ describe('StreakService', () => {
         lastStreakIncrement: new Date('2024-01-09T10:00:00Z'),
         save: jest.fn(),
       };
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(mockUser) });
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(mockUser),
+      });
 
       await service.updateStreak('userId');
-      
+
       expect(mockUser.currentStreak).toBe(2);
       expect(mockUser.save).toHaveBeenCalled();
     });
@@ -79,7 +83,9 @@ describe('StreakService', () => {
         lastStreakIncrement: new Date('2024-01-10T10:00:00Z'),
         save: jest.fn(),
       };
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(mockUser) });
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(mockUser),
+      });
 
       await service.updateStreak('userId');
 
@@ -96,7 +102,9 @@ describe('StreakService', () => {
         lastStreakIncrement: new Date('2024-01-10T10:00:00Z'),
         save: jest.fn(),
       };
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(mockUser) });
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(mockUser),
+      });
 
       await service.updateStreak('userId');
 
@@ -113,7 +121,9 @@ describe('StreakService', () => {
         lastStreakIncrement: new Date('2024-01-10T10:00:00Z'),
         save: jest.fn(),
       };
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(mockUser) });
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(mockUser),
+      });
 
       await service.updateStreak('userId');
 
@@ -130,7 +140,9 @@ describe('StreakService', () => {
         lastStreakIncrement: new Date('2024-01-10T10:00:00Z'),
         save: jest.fn(),
       };
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(mockUser) });
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(mockUser),
+      });
 
       await service.updateStreak('userId');
 
@@ -139,8 +151,12 @@ describe('StreakService', () => {
     });
 
     it('should throw NotFoundException if user does not exist', async () => {
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(null) });
-      await expect(service.updateStreak('nonexistentUser')).rejects.toThrow(NotFoundException);
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(null),
+      });
+      await expect(service.updateStreak('nonexistentUser')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -153,7 +169,9 @@ describe('StreakService', () => {
         lastStreakIncrement: new Date(),
         save: jest.fn(),
       };
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(mockUser) });
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(mockUser),
+      });
 
       const streak = await service.getStreak('userId');
 
@@ -171,7 +189,9 @@ describe('StreakService', () => {
         lastStreakIncrement: new Date('2024-01-10T10:00:00Z'), // 5 days ago
         save: jest.fn().mockResolvedValue(this),
       };
-      mockUserModel.findById.mockReturnValue({ exec: () => Promise.resolve(mockUser) });
+      mockUserModel.findById.mockReturnValue({
+        exec: () => Promise.resolve(mockUser),
+      });
 
       const streak = await service.getStreak('userId');
 
@@ -183,9 +203,15 @@ describe('StreakService', () => {
 
   describe('setStreakType', () => {
     it('should update the streak type and reset the streak', async () => {
-      mockUserModel.findByIdAndUpdate.mockReturnValue({ exec: () => Promise.resolve({}) });
+      mockUserModel.findByIdAndUpdate.mockReturnValue({
+        exec: () => Promise.resolve({}),
+      });
       await service.setStreakType('userId', StreakType.WEEKLY);
-      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith('userId', expect.any(Object), { new: true });
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'userId',
+        expect.any(Object),
+        { new: true },
+      );
     });
   });
 });

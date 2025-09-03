@@ -1,4 +1,8 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import { RoadmapService } from '../roadmap/roadmap.service';
 
@@ -14,7 +18,9 @@ export class RecommendationsService {
   async getWeeklyVideos(userId: string): Promise<any> {
     const youtubeApiKey = this.configService.youtubeApiKey;
     if (!youtubeApiKey) {
-      this.logger.warn('YouTube API key not configured. Skipping video recommendations.');
+      this.logger.warn(
+        'YouTube API key not configured. Skipping video recommendations.',
+      );
       return { videos: [] };
     }
 
@@ -23,9 +29,7 @@ export class RecommendationsService {
       return { videos: [] }; // No current week to base recommendations on
     }
 
-    const searchQuery = encodeURIComponent(
-      `tutorial for ${currentWeek.focus}`,
-    );
+    const searchQuery = encodeURIComponent(`tutorial for ${currentWeek.focus}`);
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&key=${youtubeApiKey}&maxResults=5`;
 
     try {

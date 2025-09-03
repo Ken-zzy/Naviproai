@@ -14,7 +14,10 @@ export class NotificationsService {
   ) {}
 
   async findAllForUser(userId: string): Promise<NotificationDocument[]> {
-    return this.notificationModel.find({ userId }).sort({ createdAt: -1 }).exec();
+    return this.notificationModel
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async create(data: { userId: string; message: string; type?: string }) {
@@ -38,7 +41,12 @@ export class NotificationsService {
   async markAllAsRead(
     userId: string,
   ): Promise<{ acknowledged: boolean; modifiedCount: number }> {
-    const result = await this.notificationModel.updateMany({ userId, isRead: false }, { isRead: true }).exec();
-    return { acknowledged: result.acknowledged, modifiedCount: result.modifiedCount };
+    const result = await this.notificationModel
+      .updateMany({ userId, isRead: false }, { isRead: true })
+      .exec();
+    return {
+      acknowledged: result.acknowledged,
+      modifiedCount: result.modifiedCount,
+    };
   }
 }

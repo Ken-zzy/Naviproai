@@ -29,7 +29,10 @@ export class StreakController {
     @Body() updateStreakTypeDto: UpdateStreakTypeDto,
   ) {
     const userId = (req.user as any).userId;
-    const user = await this.streakService.setStreakType(userId, updateStreakTypeDto.streakType);
+    const user = await this.streakService.setStreakType(
+      userId,
+      updateStreakTypeDto.streakType,
+    );
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }

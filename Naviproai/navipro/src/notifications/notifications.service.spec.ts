@@ -17,11 +17,12 @@ describe('NotificationsService', () => {
   // This is a mock of the Mongoose Model constructor.
   // It needs to be a function that can be instantiated with `new`.
   const mockNotificationModel = Object.assign(
-    jest.fn().mockImplementation(dto => ({
+    jest.fn().mockImplementation((dto) => ({
       ...dto,
       save: jest.fn().mockResolvedValue(dto),
     })),
-    { // static methods on the model
+    {
+      // static methods on the model
       find: jest.fn(),
       findOneAndUpdate: jest.fn(),
       updateMany: jest.fn(),
@@ -44,7 +45,10 @@ describe('NotificationsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationsService,
-        { provide: getModelToken(Notification.name), useValue: mockNotificationModel },
+        {
+          provide: getModelToken(Notification.name),
+          useValue: mockNotificationModel,
+        },
         { provide: UserService, useValue: mockUserService },
         { provide: EmailService, useValue: mockEmailService },
         { provide: PushNotificationsService, useValue: mockPushService },
@@ -52,10 +56,14 @@ describe('NotificationsService', () => {
     }).compile();
 
     service = module.get<NotificationsService>(NotificationsService);
-    notificationModel = module.get<Model<Notification>>(getModelToken(Notification.name));
+    notificationModel = module.get<Model<Notification>>(
+      getModelToken(Notification.name),
+    );
     userService = module.get<UserService>(UserService);
     emailService = module.get<EmailService>(EmailService);
-    pushService = module.get<PushNotificationsService>(PushNotificationsService);
+    pushService = module.get<PushNotificationsService>(
+      PushNotificationsService,
+    );
   });
 
   it('should be defined', () => {
@@ -64,7 +72,11 @@ describe('NotificationsService', () => {
 
   describe('create', () => {
     it('should create an in-app notification and send email and push notifications', async () => {
-      const dto = { userId: '123', message: 'Test', type: 'progress_update' as any };
+      const dto = {
+        userId: '123',
+        message: 'Test',
+        type: 'progress_update' as any,
+      };
       const user = { email: 'test@test.com', pushTokens: ['token1'] };
       mockUserService.findById.mockResolvedValue(user);
 
@@ -72,7 +84,10 @@ describe('NotificationsService', () => {
 
       expect(notificationModel).toHaveBeenCalledWith(dto);
       expect(emailService.sendMail).toHaveBeenCalled();
-      expect(pushService.send).toHaveBeenCalledWith(user.pushTokens, expect.any(Object));
+      expect(pushService.send).toHaveBeenCalledWith(
+        user.pushTokens,
+        expect.any(Object),
+      );
     });
   });
 });

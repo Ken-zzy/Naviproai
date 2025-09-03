@@ -7,7 +7,7 @@ import { AuthModule } from '../auth/auth.module';
 @Module({
   imports: [
     RoadmapModule, // Provides RoadmapService for progress tracking
-    AuthModule,    // Provides AuthGuard for controller
+    AuthModule, // Provides AuthGuard for controller
   ],
   controllers: [ProgressController],
   providers: [ProgressService],

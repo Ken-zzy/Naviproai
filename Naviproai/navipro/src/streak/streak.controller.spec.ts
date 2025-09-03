@@ -45,7 +45,10 @@ describe('StreakController', () => {
       const mockReq = { user: { sub: 'user-id-123' } };
       const dto: UpdateStreakTypeDto = { streakType: StreakType.WEEKLY };
       await controller.setStreakType(mockReq as any, dto);
-      expect(service.setStreakType).toHaveBeenCalledWith(mockReq.user.sub, dto.streakType);
+      expect(service.setStreakType).toHaveBeenCalledWith(
+        mockReq.user.sub,
+        dto.streakType,
+      );
     });
   });
 });

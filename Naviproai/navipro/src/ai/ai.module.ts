@@ -10,8 +10,12 @@ import { ChatHistory, ChatHistorySchema } from './schemas/chat-history.schema';
 
 @Module({
   imports: [
-    ConfigModule, RoadmapModule, UserModule,
-    MongooseModule.forFeature([{ name: ChatHistory.name, schema: ChatHistorySchema }]),
+    ConfigModule,
+    RoadmapModule,
+    UserModule,
+    MongooseModule.forFeature([
+      { name: ChatHistory.name, schema: ChatHistorySchema },
+    ]),
   ],
   controllers: [AiController],
   providers: [AiService],

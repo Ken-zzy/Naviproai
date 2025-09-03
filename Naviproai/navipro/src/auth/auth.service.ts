@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UserService } from '../user/user.service';
@@ -23,7 +28,9 @@ export class AuthService {
     const user = await this.userService.findByEmail(email);
     if (user && user.password && (await bcrypt.compare(pass, user.password))) {
       if (!user.isVerified) {
-        throw new UnauthorizedException('Please verify your email before logging in.');
+        throw new UnauthorizedException(
+          'Please verify your email before logging in.',
+        );
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...result } = user.toObject();
@@ -32,7 +39,9 @@ export class AuthService {
     return null;
   }
 
-  async login(user: Omit<User, 'password'> & { _id: string }): Promise<LoginResult> {
+  async login(
+    user: Omit<User, 'password'> & { _id: string },
+  ): Promise<LoginResult> {
     // The 'sub' (subject) of a JWT is typically the user's unique ID.
     const payload = { email: user.email, sub: user._id.toString() };
     return {
@@ -41,7 +50,7 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto): Promise<LoginResult | { message: string }> {
-    let existingUser = await this.userService.findByEmail(dto.email);
+    const existingUser = await this.userService.findByEmail(dto.email);
 
     if (existingUser) {
       // If user exists and has a password, it's a conflict.
@@ -68,7 +77,10 @@ export class AuthService {
 
     await this.emailService.sendVerificationLink(user.email, verificationToken);
 
-    return { message: 'Registration successful. Please check your email to verify your account.' };
+    return {
+      message:
+        'Registration successful. Please check your email to verify your account.',
+    };
   }
 
   async verifyEmail(token: string) {
@@ -89,7 +101,10 @@ export class AuthService {
     if (!user || !user.password) {
       // To prevent email enumeration, we send a generic success message
       // even if the user doesn't exist or signed up with Google.
-      return { message: 'If an account with that email exists and requires verification, a new link has been sent.' };
+      return {
+        message:
+          'If an account with that email exists and requires verification, a new link has been sent.',
+      };
     }
 
     if (user.isVerified) {
@@ -105,9 +120,11 @@ export class AuthService {
     return { message: 'A new verification link has been sent to your email.' };
   }
 
-  async handleGoogleLogin(
-    profile: { googleId: string; email: string; name: string },
-  ): Promise<LoginResult> {
+  async handleGoogleLogin(profile: {
+    googleId: string;
+    email: string;
+    name: string;
+  }): Promise<LoginResult> {
     let user = await this.userService.findByEmail(profile.email);
 
     if (user) {

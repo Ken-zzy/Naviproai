@@ -1,6 +1,12 @@
-import { Injectable, Logger, InternalServerErrorException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '../config/config.service';
 import { RoadmapService } from '../roadmap/roadmap.service';
 import { UserService } from '../user/user.service';
@@ -16,10 +22,12 @@ export class AiService implements OnModuleInit {
   private gotInstance!: Got;
 
   constructor(
-    @InjectModel(ChatHistory.name) private readonly chatHistoryModel: Model<ChatHistory>,
+    @InjectModel(ChatHistory.name)
+    private readonly chatHistoryModel: Model<ChatHistory>,
     private readonly configService: ConfigService,
     private readonly roadmapService: RoadmapService,
     private readonly userService: UserService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async onModuleInit() {
@@ -42,23 +50,37 @@ export class AiService implements OnModuleInit {
     method: 'get' | 'post' | 'patch',
     endpoint: string,
     options: any = {},
+    userId?: string,
   ): Promise<T> {
     const url = `${this.configService.aiAgentUrl}${endpoint}`;
 
+    const requestOptions = { ...options };
+
+    if (userId) {
+      const payload = { user_id: userId };
+      const token = this.jwtService.sign(payload, {
+        secret: this.configService.aiAgentKey,
+      });
+      requestOptions.headers = {
+        ...requestOptions.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
+
     this.logger.debug(`Calling: ${method.toUpperCase()} ${url}`);
-    this.logger.debug(`Payload: ${JSON.stringify(options, null, 2)}`);
+    this.logger.debug(`Payload: ${JSON.stringify(requestOptions, null, 2)}`);
 
     try {
       let responsePromise;
       switch (method) {
         case 'get':
-          responsePromise = this.gotInstance.get(url, options);
+          responsePromise = this.gotInstance.get(url, requestOptions);
           break;
         case 'post':
-          responsePromise = this.gotInstance.post(url, options);
+          responsePromise = this.gotInstance.post(url, requestOptions);
           break;
         case 'patch':
-          responsePromise = this.gotInstance.patch(url, options);
+          responsePromise = this.gotInstance.patch(url, requestOptions);
           break;
       }
       const jsonResponse = await responsePromise.json<T>();
@@ -69,7 +91,9 @@ export class AiService implements OnModuleInit {
         this.logger.error(`Error: ${error.message}`);
         if ('response' in error && error.response) {
           const httpError = error as { response: { body: any } };
-          this.logger.error(`Response body: ${JSON.stringify(httpError.response.body, null, 2)}`);
+          this.logger.error(
+            `Response body: ${JSON.stringify(httpError.response.body, null, 2)}`,
+          );
         }
       } else {
         this.logger.error('An unknown error occurred', String(error));
@@ -85,9 +109,14 @@ export class AiService implements OnModuleInit {
     this.logger.log(
       `Generating roadmap for role: ${targetRole} from level: ${currentLevel}`,
     );
-    const response = await this._callAiAgent<any>('post', '/api/generate_roadmap', {
-      json: { userId, targetRole, currentLevel },
-    });
+    const response = await this._callAiAgent<any>(
+      'post',
+      '/api/generate_roadmap',
+      {
+        json: { userId, targetRole, currentLevel },
+      },
+      userId,
+    );
     this.logger.log('Successfully received roadmap from AI agent.');
     return this.roadmapService.createOrUpdateRoadmap(userId, response);
   }
@@ -125,52 +154,75 @@ export class AiService implements OnModuleInit {
           context: chatContext,
         },
       },
+      userId,
     );
 
     const replyContent =
       aiResponse.reply || aiResponse.text || JSON.stringify(aiResponse);
 
-    await this.chatHistoryModel.findOneAndUpdate(
-      { userId },
-      {
-        $push: {
-          messages: {
-            $each: [
-              { role: ChatMessageRole.USER, content: message },
-              { role: ChatMessageRole.ASSISTANT, content: replyContent },
-            ],
-            $slice: -this.MAX_CHAT_HISTORY,
+    await this.chatHistoryModel
+      .findOneAndUpdate(
+        { userId },
+        {
+          $push: {
+            messages: {
+              $each: [
+                { role: ChatMessageRole.USER, content: message },
+                { role: ChatMessageRole.ASSISTANT, content: replyContent },
+              ],
+              $slice: -this.MAX_CHAT_HISTORY,
+            },
           },
         },
-      },
-      { upsert: true, new: true },
-    ).exec();
+        { upsert: true, new: true },
+      )
+      .exec();
 
     return aiResponse;
   }
 
   async getUserRoadmap(userId: string): Promise<any> {
     this.logger.log(`Getting user roadmap from AI for user ${userId}`);
-    return this._callAiAgent<any>('get', `/api/user_roadmap/${userId}`);
+    return this._callAiAgent<any>(
+      'get',
+      `/api/user_roadmap/${userId}`,
+      {},
+      userId,
+    );
   }
 
   async completeTask(userId: string, taskId: string): Promise<any> {
     this.logger.log(`Completing task ${taskId} for user ${userId} via AI`);
-    return this._callAiAgent<any>('patch', `/api/complete_task/${userId}`, {
-      json: { taskId },
-    });
+    return this._callAiAgent<any>(
+      'patch',
+      `/api/complete_task/${userId}`,
+      {
+        json: { taskId },
+      },
+      userId,
+    );
   }
 
   async getUserProgress(userId: string): Promise<any> {
     this.logger.log(`Getting user progress from AI for user ${userId}`);
-    return this._callAiAgent<any>('get', `/api/user_progress/${userId}`);
+    return this._callAiAgent<any>(
+      'get',
+      `/api/user_progress/${userId}`,
+      {},
+      userId,
+    );
   }
 
   async getWeeklyVideos(userId: string): Promise<any> {
     this.logger.log(`Getting weekly videos from AI for user ${userId}`);
-    return this._callAiAgent<any>('get', `/api/week_videos/${userId}`);
+    return this._callAiAgent<any>(
+      'get',
+      `/api/week_videos/${userId}`,
+      {},
+      userId,
+    );
   }
-  
+
   async triggerFullPipeline(): Promise<any> {
     this.logger.log('Triggering full pipeline on AI agent');
     return this._callAiAgent<any>('post', '/api/full_pipeline');

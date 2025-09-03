@@ -42,7 +42,10 @@ describe('RoadmapController', () => {
     it('should call the service to complete a task for the authenticated user', async () => {
       const mockReq = { user: { userId: 'user-123', email: 'test@test.com' } };
       await controller.completeTask(mockReq, 'task-id-123');
-      expect(service.completeTask).toHaveBeenCalledWith(mockReq.user.userId, 'task-id-123');
+      expect(service.completeTask).toHaveBeenCalledWith(
+        mockReq.user.userId,
+        'task-id-123',
+      );
     });
   });
 });

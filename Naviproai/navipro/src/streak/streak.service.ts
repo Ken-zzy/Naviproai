@@ -1,11 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  User,
-  UserDocument,
-  StreakType,
-} from '../user/user.schema';
+import { User, UserDocument, StreakType } from '../user/user.schema';
 import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
@@ -17,9 +13,7 @@ export class StreakService {
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  async getStreak(
-    userId: string,
-  ): Promise<{
+  async getStreak(userId: string): Promise<{
     currentStreak: number;
     longestStreak: number;
     streakType: StreakType;

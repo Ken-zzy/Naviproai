@@ -12,7 +12,9 @@ interface AuthenticatedRequest {
 @Controller('recommendations')
 @UseGuards(AuthGuard('jwt'))
 export class RecommendationsController {
-  constructor(private readonly recommendationsService: RecommendationsService) {}
+  constructor(
+    private readonly recommendationsService: RecommendationsService,
+  ) {}
 
   @Get('weekly-videos')
   async getWeeklyVideos(@Request() req: AuthenticatedRequest) {

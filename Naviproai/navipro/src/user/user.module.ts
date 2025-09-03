@@ -9,7 +9,7 @@ import { RoadmapModule } from '../roadmap/roadmap.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    
+
     forwardRef(() => RoadmapModule), // Import RoadmapModule to use RoadmapService
   ],
   providers: [UserService],

@@ -47,16 +47,22 @@ describe('RoadmapService', () => {
   describe('getDailyTask', () => {
     it('should return the first uncompleted task', async () => {
       const mockRoadmap = {
-        months: [{
-          weeks: [{
-            daily_tasks: [
-              { task_id: '1', completed: true },
-              { task_id: '2', completed: false },
+        months: [
+          {
+            weeks: [
+              {
+                daily_tasks: [
+                  { task_id: '1', completed: true },
+                  { task_id: '2', completed: false },
+                ],
+              },
             ],
-          }],
-        }],
+          },
+        ],
       };
-      mockRoadmapModel.findOne.mockReturnValue({ exec: () => Promise.resolve(mockRoadmap) });
+      mockRoadmapModel.findOne.mockReturnValue({
+        exec: () => Promise.resolve(mockRoadmap),
+      });
 
       const task = await service.getDailyTask('userId');
       expect(task).toEqual({ task_id: '2', completed: false });
@@ -64,13 +70,19 @@ describe('RoadmapService', () => {
 
     it('should return null if all tasks are completed', async () => {
       const mockRoadmap = {
-        months: [{
-          weeks: [{
-            daily_tasks: [{ task_id: '1', completed: true }],
-          }],
-        }],
+        months: [
+          {
+            weeks: [
+              {
+                daily_tasks: [{ task_id: '1', completed: true }],
+              },
+            ],
+          },
+        ],
       };
-      mockRoadmapModel.findOne.mockReturnValue({ exec: () => Promise.resolve(mockRoadmap) });
+      mockRoadmapModel.findOne.mockReturnValue({
+        exec: () => Promise.resolve(mockRoadmap),
+      });
 
       const task = await service.getDailyTask('userId');
       expect(task).toBeNull();
@@ -79,16 +91,25 @@ describe('RoadmapService', () => {
 
   describe('completeTask', () => {
     it('should mark a task as complete and update the streak', async () => {
-      const mockTask: Partial<Task> = { task_id: 'task-to-complete', completed: false };
+      const mockTask: Partial<Task> = {
+        task_id: 'task-to-complete',
+        completed: false,
+      };
       const mockRoadmap = {
-        months: [{
-          weeks: [{
-            daily_tasks: [mockTask],
-          }],
-        }],
+        months: [
+          {
+            weeks: [
+              {
+                daily_tasks: [mockTask],
+              },
+            ],
+          },
+        ],
         save: jest.fn().mockResolvedValue(true),
       };
-      mockRoadmapModel.findOne.mockReturnValue({ exec: () => Promise.resolve(mockRoadmap) });
+      mockRoadmapModel.findOne.mockReturnValue({
+        exec: () => Promise.resolve(mockRoadmap),
+      });
 
       await service.completeTask('userId', 'task-to-complete');
 
@@ -100,9 +121,13 @@ describe('RoadmapService', () => {
 
     it('should throw NotFoundException if task does not exist', async () => {
       const mockRoadmap = { months: [] };
-      mockRoadmapModel.findOne.mockReturnValue({ exec: () => Promise.resolve(mockRoadmap) });
+      mockRoadmapModel.findOne.mockReturnValue({
+        exec: () => Promise.resolve(mockRoadmap),
+      });
 
-      await expect(service.completeTask('userId', 'nonexistent-task')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.completeTask('userId', 'nonexistent-task'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

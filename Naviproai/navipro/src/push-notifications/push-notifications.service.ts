@@ -36,7 +36,9 @@ export class PushNotificationsService {
           contents: { en: payload.body },
         },
       });
-      this.logger.log(`Successfully sent push notification to ${tokens.length} devices.`);
+      this.logger.log(
+        `Successfully sent push notification to ${tokens.length} devices.`,
+      );
     } catch (error) {
       this.logger.error(
         'Failed to send push notification via OneSignal',
