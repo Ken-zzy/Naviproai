@@ -101,7 +101,7 @@ export class AiService implements OnModuleInit {
   }
 
   async generateRoadmap(userId: string, generateRoadmapDto: any) {
-    const { targetRole, currentLevel } = generateRoadmapDto;
+    const { targetRole, currentLevel, goal, timeframe } = generateRoadmapDto;
     this.logger.log(
       `Generating roadmap for role: ${targetRole} from level: ${currentLevel}`,
     );
@@ -109,7 +109,7 @@ export class AiService implements OnModuleInit {
       'post',
       '/api/generate_roadmap',
       {
-        json: { user_id: userId, targetRole, currentLevel },
+        json: { user_id: userId, targetRole, currentLevel, goal, timeframe },
       },
       userId,
     );

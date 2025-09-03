@@ -8,4 +8,12 @@ export class GenerateRoadmapDto {
   @IsString()
   @IsNotEmpty()
   currentLevel!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  goal!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  timeframe!: string;
 }
