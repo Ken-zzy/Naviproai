@@ -57,13 +57,9 @@ export class AiService implements OnModuleInit {
     const requestOptions = { ...options };
 
     if (userId) {
-      const payload = { user_id: userId };
-      const token = this.jwtService.sign(payload, {
-        secret: this.configService.aiAgentKey,
-      });
       requestOptions.headers = {
         ...requestOptions.headers,
-        Authorization: `Bearer ${token}`,
+        'X-User-ID': userId,
       };
     }
 
