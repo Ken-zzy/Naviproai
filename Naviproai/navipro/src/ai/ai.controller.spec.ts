@@ -41,6 +41,8 @@ describe('AiController', () => {
       const dto: GenerateRoadmapDto = {
         targetRole: 'dev',
         currentLevel: 'beginner',
+        goal: 'Become a Senior Developer',
+        timeframe: '3 months',
       };
       mockAiService.generateRoadmap.mockResolvedValue({ success: true });
       await controller.generateRoadmap(mockUser as any, dto);
