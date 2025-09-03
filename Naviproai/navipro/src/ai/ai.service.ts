@@ -113,7 +113,7 @@ export class AiService implements OnModuleInit {
       'post',
       '/api/generate_roadmap',
       {
-        json: { userId, targetRole, currentLevel },
+        json: { user_id: userId, targetRole, currentLevel },
       },
       userId,
     );
