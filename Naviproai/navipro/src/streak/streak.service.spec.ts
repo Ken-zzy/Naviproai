@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { StreakService } from './streak.service';
 import { User, UserDocument, StreakType } from '../user/user.schema';
 import { NotFoundException } from '@nestjs/common';
+import { NotificationsService } from '../notifications/notifications.service';
 
 describe('StreakService', () => {
   let service: StreakService;
@@ -15,6 +16,10 @@ describe('StreakService', () => {
     // .save() will be mocked on the user object itself
   };
 
+  const mockNotificationsService = {
+    create: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -22,6 +27,10 @@ describe('StreakService', () => {
         {
           provide: getModelToken(User.name),
           useValue: mockUserModel,
+        },
+        {
+          provide: NotificationsService,
+          useValue: mockNotificationsService,
         },
       ],
     }).compile();
