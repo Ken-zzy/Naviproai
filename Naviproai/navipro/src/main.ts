@@ -11,7 +11,10 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.port || 3000;
 
-  app.enableCors();
+    app.enableCors({
+    origin: configService.frontendUrl,
+    credentials: true,
+  });
   app.use(
     helmet({
       xPoweredBy: false, // Explicitly disable x-powered-by
