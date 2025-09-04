@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Req,
-  Res,
   UseGuards,
   Post,
   Body,
@@ -13,19 +12,30 @@ import {
   Redirect,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 import { AuthService, LoginResult } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ConfigService } from '../config/config.service';
+import { User } from '../user/user.schema';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(@Body() registerDto: RegisterDto) {
+    const result = await this.authService.register(registerDto);
+    if (result.redirectUrl) {
+      // This is a simplified example; in a real app, you might handle
+      // the redirect differently (e.g., returning the URL to the client)
+      return { url: result.redirectUrl };
+    }
+    return result;
   }
 
   @Post('login')
@@ -38,23 +48,28 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return this.authService.login(user);
+    return this.authService.login(user as User & { _id: string });
   }
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {}
+
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthCallback(@Req() req: Request) {
-    // The google strategy places the user on the request object.
-    // The service then handles creating a JWT.
-    return this.authService.handleGoogleLogin(req.user as any);
+  @Redirect()
+  async googleAuthCallback(@Req() req: Request & { user: User }) {
+    const result = await this.authService.handleGoogleLogin(req.user);
+    // The URL should be constructed to include the token
+    const redirectUrl = new URL(this.configService.frontendUrl);
+    redirectUrl.searchParams.set('token', result.access_token);
+    return { url: redirectUrl.toString() };
   }
 
   @Get('verify-email')
+  @Redirect()
   async verifyEmail(@Query('token') token: string) {
-    // This handles the link sent to the user's email
-    return this.authService.verifyEmail(token);
+    const result = await this.authService.verifyEmail(token);
+    return { url: result.redirectUrl };
   }
 }

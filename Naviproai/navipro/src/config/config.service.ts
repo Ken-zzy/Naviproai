@@ -93,4 +93,8 @@ export class ConfigService {
   get youtubeApiKey(): string {
     return this.nestConfigService.get<string>('YOUTUBE_API_KEY')!;
   }
+
+  get frontendUrl(): string {
+    return this.nestConfigService.get<string>('FRONTEND_URL')!;
+  }
 }

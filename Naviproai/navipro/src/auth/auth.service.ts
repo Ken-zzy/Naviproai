@@ -11,6 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { User, AuthProvider } from '../user/user.schema';
 import { EmailService } from '../email/email.service';
 import * as crypto from 'crypto';
+import { ConfigService } from '../config/config.service';
 
 export interface LoginResult {
   access_token: string;
@@ -22,9 +23,13 @@ export class AuthService {
     private jwtService: JwtService,
     private userService: UserService,
     private emailService: EmailService,
+    private configService: ConfigService,
   ) {}
 
-  async validateUser(email: string, pass: string) {
+  async validateUser(
+    email: string,
+    pass: string,
+  ): Promise<Omit<User, 'password'> | null> {
     const user = await this.userService.findByEmail(email);
     if (user && user.password && (await bcrypt.compare(pass, user.password))) {
       if (!user.isVerified) {
@@ -39,9 +44,7 @@ export class AuthService {
     return null;
   }
 
-  async login(
-    user: Omit<User, 'password'> & { _id: string },
-  ): Promise<LoginResult> {
+  login(user: Omit<User, 'password'> & { _id: string }): LoginResult {
     // The 'sub' (subject) of a JWT is typically the user's unique ID.
     const payload = { email: user.email, sub: user._id.toString() };
     return {
@@ -49,7 +52,9 @@ export class AuthService {
     };
   }
 
-  async register(dto: RegisterDto): Promise<LoginResult | { message: string }> {
+  async register(
+    dto: RegisterDto,
+  ): Promise<{ message: string; redirectUrl?: string }> {
     const existingUser = await this.userService.findByEmail(dto.email);
 
     if (existingUser) {
@@ -61,7 +66,14 @@ export class AuthService {
       existingUser.password = await bcrypt.hash(dto.password, 10);
       existingUser.providers.push(AuthProvider.EMAIL);
       await this.userService.save(existingUser);
-      return this.login(existingUser.toObject());
+      const loginResult = this.login(
+        existingUser.toObject() as User & { _id: string },
+      );
+      return {
+        message: 'User successfully registered and logged in.',
+        redirectUrl: `${this.configService.frontendUrl}`,
+        ...loginResult,
+      };
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -80,6 +92,7 @@ export class AuthService {
     return {
       message:
         'Registration successful. Please check your email to verify your account.',
+      redirectUrl: `${this.configService.frontendUrl}/verify-email`,
     };
   }
 
@@ -93,7 +106,10 @@ export class AuthService {
     user.verificationToken = null;
     await this.userService.save(user);
 
-    return { message: 'Email verified successfully. You can now log in.' };
+    return {
+      message: 'Email verified successfully. You can now log in.',
+      redirectUrl: `${this.configService.frontendUrl}/login`,
+    };
   }
   async resendVerificationLink(email: string): Promise<{ message: string }> {
     const user = await this.userService.findByEmail(email);
@@ -120,11 +136,9 @@ export class AuthService {
     return { message: 'A new verification link has been sent to your email.' };
   }
 
-  async handleGoogleLogin(profile: {
-    googleId: string;
-    email: string;
-    name: string;
-  }): Promise<LoginResult> {
+  async handleGoogleLogin(
+    profile: User,
+  ): Promise<LoginResult & { redirectUrl: string }> {
     let user = await this.userService.findByEmail(profile.email);
 
     if (user) {
@@ -149,6 +163,10 @@ export class AuthService {
       });
     }
 
-    return this.login(user.toObject());
+    const loginResult = this.login(user.toObject() as User & { _id: string });
+    return {
+      ...loginResult,
+      redirectUrl: `${this.configService.frontendUrl}`,
+    };
   }
 }
