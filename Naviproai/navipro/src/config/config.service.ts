@@ -49,6 +49,10 @@ export class ConfigService {
     return this.nestConfigService.get<number>('PORT')!;
   }
 
+  get nodeEnv(): string {
+    return this.nestConfigService.get<string>('NODE_ENV')!;
+  }
+
   get backendUrl(): string {
     return this.nestConfigService.get<string>('BACKEND_URL')!;
   }

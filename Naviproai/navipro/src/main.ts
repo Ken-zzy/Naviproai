@@ -11,8 +11,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.port || 3000;
 
-    app.enableCors({
-    origin: configService.frontendUrl,
+        app.enableCors({
+    origin: '*',
     credentials: true,
   });
   app.use(
