@@ -35,7 +35,7 @@ export class AiController {
 
   @Post('generate-roadmap')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt')) // Temporarily disable for debugging
   async generateRoadmap(
     @GetUser() user: RequestUser,
     @Body() generateRoadmapDto: GenerateRoadmapDto,
