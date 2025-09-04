@@ -8,7 +8,19 @@ export class Task {
   task_id!: string;
 
   @Prop({ required: true })
-  task!: string;
+  title!: string;
+
+  @Prop({ required: true })
+  description!: string;
+
+  @Prop({ type: [String], default: [] })
+  resources!: string[];
+
+  @Prop({ required: true })
+  day!: number;
+
+  @Prop({ required: true })
+  estimated_time!: string;
 
   @Prop({ default: false })
   completed!: boolean;
