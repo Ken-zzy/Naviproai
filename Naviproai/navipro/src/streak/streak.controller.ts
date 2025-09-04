@@ -19,7 +19,7 @@ export class StreakController {
 
   @Get()
   async getStreak(@Req() req: Request) {
-    const userId = (req.user as any).userId;
+    const userId = (req.user as any)._id;
     return this.streakService.getStreak(userId);
   }
 
@@ -28,7 +28,7 @@ export class StreakController {
     @Req() req: Request,
     @Body() updateStreakTypeDto: UpdateStreakTypeDto,
   ) {
-    const userId = (req.user as any).userId;
+    const userId = (req.user as any)._id;
     const user = await this.streakService.setStreakType(
       userId,
       updateStreakTypeDto.streakType,

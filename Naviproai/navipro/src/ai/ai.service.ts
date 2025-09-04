@@ -143,9 +143,10 @@ export class AiService implements OnModuleInit {
 
     const aiResponse = await this._callAiAgent<any>(
       'post',
-      `/api/chat/${userId}`,
+      `/api/chat`,
       {
         json: {
+          user_id: userId,
           message,
           context: chatContext,
         },
