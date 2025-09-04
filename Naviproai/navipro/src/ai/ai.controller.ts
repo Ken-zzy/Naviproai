@@ -40,6 +40,7 @@ export class AiController {
     @GetUser() user: RequestUser,
     @Body() generateRoadmapDto: GenerateRoadmapDto,
   ) {
+    this.logger.log('generateRoadmap method called');
     if (!user || !user._id) {
       this.logger.error('User not found in request for generate-roadmap');
       throw new UnauthorizedException('User not found');
