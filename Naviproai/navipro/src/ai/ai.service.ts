@@ -11,9 +11,10 @@ import { ConfigService } from '../config/config.service';
 import { RoadmapService } from '../roadmap/roadmap.service';
 import { UserService } from '../user/user.service';
 import { ChatHistory, ChatMessageRole } from './schemas/chat-history.schema';
-import type { default as got } from 'got';
+import { Roadmap, RoadmapDocument, Month, Week, Task } from '../roadmap/schemas/roadmap.schema';
 
-type Got = ReturnType<typeof got.extend>;
+import type { Got as GotType } from 'got';
+type Got = GotType;
 
 @Injectable()
 export class AiService implements OnModuleInit {
@@ -100,6 +101,33 @@ export class AiService implements OnModuleInit {
     }
   }
 
+  private transformRoadmapData(aiRoadmap: any[]): Month[] {
+    return aiRoadmap.map((monthData) => {
+      const month: Month = {
+        weeks: monthData.weeks.map((weekData: any) => {
+          const week: Week = {
+            focus: weekData.focus,
+            daily_tasks: weekData.daily_tasks.map((taskData: any) => {
+              const task: Task = {
+                task_id: taskData.task_id,
+                title: taskData.title,
+                description: taskData.description,
+                resources: taskData.resources,
+                day: taskData.day,
+                estimated_time: taskData.estimated_time,
+                completed: taskData.completed,
+                completed_date: taskData.completed_date,
+              };
+              return task;
+            }),
+          };
+          return week;
+        }),
+      };
+      return month;
+    });
+  }
+
   async generateRoadmap(userId: string, generateRoadmapDto: any) {
     const { targetRole, currentLevel, goal, timeframe } = generateRoadmapDto;
     this.logger.log(
@@ -114,7 +142,8 @@ export class AiService implements OnModuleInit {
       userId,
     );
     this.logger.log('Successfully received roadmap from AI agent.');
-    return this.roadmapService.createOrUpdateRoadmap(userId, response);
+    const transformedMonths = this.transformRoadmapData(response.roadmap.roadmap);
+    return this.roadmapService.createOrUpdateRoadmap(userId, { months: transformedMonths });
   }
 
   async getChatResponse(userId: string, message: string): Promise<any> {
