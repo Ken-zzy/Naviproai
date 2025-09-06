@@ -9,6 +9,7 @@ import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
 import { EmailModule } from '../email/email.module';
 import { GoogleStrategy } from './google.strategy';
+import { AiModule } from '../ai/ai.module';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { GoogleStrategy } from './google.strategy';
     }),
     forwardRef(() => UserModule),
     EmailModule,
+    AiModule,
   ],
   providers: [AuthService, JwtStrategy, GoogleStrategy],
   controllers: [AuthController],

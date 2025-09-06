@@ -20,5 +20,6 @@ import { JwtModule } from '@nestjs/jwt';
   ],
   controllers: [AiController],
   providers: [AiService],
+  exports: [AiService],
 })
 export class AiModule {}
