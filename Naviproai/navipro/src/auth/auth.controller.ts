@@ -19,11 +19,14 @@ import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '../config/config.service';
 import { User } from '../user/user.schema';
 
+import { AiService } from '../ai/ai.service';
+
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private readonly aiService: AiService,
   ) {}
 
   @Post('register')
@@ -57,13 +60,13 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  @Redirect()
   async googleAuthCallback(@Req() req: Request & { user: User }) {
     const result = await this.authService.handleGoogleLogin(req.user);
-    // The URL should be constructed to include the token
-    const redirectUrl = new URL(this.configService.frontendUrl);
-    redirectUrl.searchParams.set('token', result.access_token);
-    return { url: redirectUrl.toString() };
+    await this.aiService.handleUserLogin(result.user._id, result.access_token);
+    return {
+      accessToken: result.access_token,
+      userId: result.user._id,
+    };
   }
 
   @Get('verify-email')

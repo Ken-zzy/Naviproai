@@ -138,7 +138,7 @@ export class AuthService {
 
   async handleGoogleLogin(
     profile: User,
-  ): Promise<LoginResult & { redirectUrl: string }> {
+  ): Promise<LoginResult & { redirectUrl: string; user: any }> {
     let user = await this.userService.findByEmail(profile.email);
 
     if (user) {
@@ -167,6 +167,7 @@ export class AuthService {
     return {
       ...loginResult,
       redirectUrl: `${this.configService.frontendUrl}`,
+      user: user.toObject(),
     };
   }
 }

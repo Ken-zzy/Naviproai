@@ -258,4 +258,14 @@ export class AiService implements OnModuleInit {
     this.logger.log('Checking AI agent health');
     return this._callAiAgent<any>('get', '/api/health');
   }
+
+  async handleUserLogin(userId: string, token: string): Promise<void> {
+    this.logger.log(`Handling user login for user ${userId}.`);
+    // Here you can add any logic that needs to happen when a user logs in.
+    // For example, you could use the token to make authenticated requests
+    // on behalf of the user to other services.
+    // For now, we'll just log the information.
+    this.logger.debug(`User ID: ${userId}`);
+    this.logger.debug(`Token: ${token}`);
+  }
 }
