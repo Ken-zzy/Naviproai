@@ -9,4 +9,5 @@ export const configValidationSchema = Joi.object({
     .valid('development', 'production', 'test')
     .default('development'),
   AI_AGENT_URL: Joi.string().uri().required(),
+  FRONTEND_DASHBOARD_URL: Joi.string().uri().required(),
 });

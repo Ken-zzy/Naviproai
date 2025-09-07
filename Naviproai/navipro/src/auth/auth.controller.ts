@@ -43,7 +43,9 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto): Promise<LoginResult> {
+  async login(
+    @Body() loginDto: LoginDto,
+  ): Promise<LoginResult & { redirectUrl: string }> {
     const user = await this.authService.validateUser(
       loginDto.email,
       loginDto.password,
@@ -51,7 +53,11 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return this.authService.login(user as User & { _id: string });
+    const loginResult = this.authService.login(user as User & { _id: string });
+    return {
+      ...loginResult,
+      redirectUrl: this.configService.frontendDashboardUrl,
+    };
   }
 
   @Get('google')

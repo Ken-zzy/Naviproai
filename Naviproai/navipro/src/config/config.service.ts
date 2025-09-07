@@ -101,4 +101,8 @@ export class ConfigService {
   get frontendUrl(): string {
     return this.nestConfigService.get<string>('FRONTEND_URL')!;
   }
+
+  get frontendDashboardUrl(): string {
+    return this.nestConfigService.get<string>('FRONTEND_DASHBOARD_URL')!;
+  }
 }
