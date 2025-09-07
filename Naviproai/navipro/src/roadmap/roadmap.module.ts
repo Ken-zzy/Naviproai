@@ -11,7 +11,7 @@ import { UserModule } from '../user/user.module';
   imports: [
     MongooseModule.forFeature([{ name: Roadmap.name, schema: RoadmapSchema }]),
     forwardRef(() => StreakModule), // <-- This makes StreakService available for injection
-    forwardRef(() => AuthModule), // <-- For AuthGuard in the controller
+    
     forwardRef(() => UserModule), // <-- For UserService in the controller
   ],
   controllers: [RoadmapController],

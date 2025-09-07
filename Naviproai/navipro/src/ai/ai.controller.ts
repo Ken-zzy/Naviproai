@@ -12,7 +12,7 @@ import {
 import { AiService } from './ai.service';
 import { ChatDto } from './dto/chat.dto';
 import { GenerateRoadmapDto } from './dto/generate-roadmap.dto';
-import { AuthGuard } from '@nestjs/passport';
+
 import { User as GetUser } from '../user/user.decorator';
 import type { User } from '../user/user.schema';
 import type { Types } from 'mongoose';
@@ -35,7 +35,7 @@ export class AiController {
 
   @Post('generate-roadmap')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('jwt')) // Re-enable the guard
+  @UseGuards(ApiKeyGuard) // Re-enable the guard
   async generateRoadmap(
     @GetUser() user: RequestUser,
     @Body() generateRoadmapDto: GenerateRoadmapDto,
@@ -52,7 +52,7 @@ export class AiController {
 
   @Post('chat')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(ApiKeyGuard)
   async chat(@GetUser() user: RequestUser, @Body() chatDto: ChatDto) {
     if (!user || !user._id) {
       this.logger.error('User not found in request for chat');
