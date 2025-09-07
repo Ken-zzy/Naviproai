@@ -66,13 +66,16 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
+  @Redirect()
   async googleAuthCallback(@Req() req: Request & { user: User }) {
     const result = await this.authService.handleGoogleLogin(req.user);
     await this.aiService.handleUserLogin(result.user._id, result.access_token);
-    return {
-      accessToken: result.access_token,
-      userId: result.user._id,
-    };
+
+    const redirectUrl = new URL(result.redirectUrl);
+    redirectUrl.searchParams.set('accessToken', result.access_token);
+    redirectUrl.searchParams.set('userId', result.user._id.toString());
+
+    return { url: redirectUrl.toString() };
   }
 
   @Get('verify-email')
