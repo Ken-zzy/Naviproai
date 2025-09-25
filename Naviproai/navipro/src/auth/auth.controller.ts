@@ -19,7 +19,10 @@ import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '../config/config.service';
 import { User } from '../user/user.schema';
 
+import { ResendVerificationDto } from './dto/resend-verification.dto';
+
 import { AiService } from '../ai/ai.service';
+
 
 @Controller('auth')
 export class AuthController {
@@ -58,6 +61,12 @@ export class AuthController {
       ...loginResult,
       redirectUrl: this.configService.frontendDashboardUrl,
     };
+  }
+
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(@Body() resendVerificationDto: ResendVerificationDto) {
+    return this.authService.resendVerificationLink(resendVerificationDto.email);
   }
 
   @Get('google')

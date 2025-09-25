@@ -9,7 +9,7 @@ export class EmailService {
   private transporter: Mail;
 
   constructor(private readonly configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
+    const transportOptions = {
       host: this.configService.emailHost,
       port: this.configService.emailPort,
       secure: this.configService.emailSecure,
@@ -17,7 +17,16 @@ export class EmailService {
         user: this.configService.emailUser,
         pass: this.configService.emailPass,
       },
-    });
+      connectionTimeout: 10000, // 10 seconds
+    };
+
+    this.logger.log('Initializing email transporter with options:');
+    this.logger.log(`Host: ${transportOptions.host}`);
+    this.logger.log(`Port: ${transportOptions.port}`);
+    this.logger.log(`Secure: ${transportOptions.secure}`);
+    this.logger.log(`User: ${transportOptions.auth.user}`);
+
+    this.transporter = nodemailer.createTransport(transportOptions);
   }
 
   async sendMail(mailOptions: Mail.Options) {

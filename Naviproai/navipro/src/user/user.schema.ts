@@ -33,7 +33,7 @@ export class User extends Document {
   @Prop({ type: String, required: false, default: null })
   verificationToken!: string | null;
 
-  @Prop({ type: String, default: null, unique: true, sparse: true })
+  @Prop({ type: String, default: null })
   googleId!: string | null;
 
   @Prop({ enum: StreakType, default: StreakType.DAILY })
@@ -53,3 +53,8 @@ export class User extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.index(
+  { googleId: 1 },
+  { unique: true, partialFilterExpression: { googleId: { $ne: null } } },
+);
