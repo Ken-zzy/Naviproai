@@ -44,7 +44,9 @@ export class AuthService {
     return null;
   }
 
-  login(user: Omit<User, 'password'> & { _id: string }): LoginResult {
+  login(
+    user: Omit<User, 'password'> & { _id: { toString(): string } },
+  ): LoginResult {
     // The 'sub' (subject) of a JWT is typically the user's unique ID.
     const payload = { email: user.email, sub: user._id.toString() };
     return {
@@ -66,9 +68,7 @@ export class AuthService {
       existingUser.password = await bcrypt.hash(dto.password, 10);
       existingUser.providers.push(AuthProvider.EMAIL);
       await this.userService.save(existingUser);
-      const loginResult = this.login(
-        existingUser.toObject() as User & { _id: string },
-      );
+      const loginResult = this.login(existingUser.toObject());
       return {
         message: 'User successfully registered and logged in.',
         redirectUrl: `${this.configService.frontendUrl}`,
@@ -163,10 +163,10 @@ export class AuthService {
       });
     }
 
-    const loginResult = this.login(user.toObject() as User & { _id: string });
+    const loginResult = this.login(user.toObject());
     return {
       ...loginResult,
-      redirectUrl: this.configService.frontendDashboardUrl,
+      redirectUrl: this.configService.frontendUrl,
       user: user.toObject(),
     };
   }
