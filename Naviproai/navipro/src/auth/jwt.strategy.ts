@@ -6,12 +6,13 @@ import { UserService } from '../user/user.service';
 import { UserDocument } from '../user/user.schema';
 import { Request } from 'express';
 
-const cookieExtractor = (req: Request): string | null => {
-  let token = null;
-  if (req && req.cookies) {
-    token = req.cookies['jwt'];
+const jwtExtractor = (req: Request) => {
+  // Try cookie first
+  if (req && req.cookies && req.cookies['jwt']) {
+    return req.cookies['jwt'];
   }
-  return token;
+  // Then try Authorization header
+  return ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 };
 
 @Injectable()
@@ -21,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly userService: UserService,
   ) {
     super({
-      jwtFromRequest: cookieExtractor,
+      jwtFromRequest: jwtExtractor,
       ignoreExpiration: false,
       secretOrKey: configService.jwtSecret,
     });
