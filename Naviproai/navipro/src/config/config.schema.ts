@@ -11,6 +11,7 @@ export const configValidationSchema = Joi.object({
   GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
   FRONTEND_URL: Joi.string().required(),
   FRONTEND_DASHBOARD_URL: Joi.string().uri().required(),
+  DASHBOARD_URL: Joi.string().uri().required(),
   BACKEND_URL: Joi.string().uri().required(),
   EMAIL_HOST: Joi.string().required(),
   EMAIL_PORT: Joi.number().required(),

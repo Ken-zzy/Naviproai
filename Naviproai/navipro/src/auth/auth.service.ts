@@ -166,7 +166,7 @@ export class AuthService {
     const loginResult = this.login(user.toObject());
     return {
       ...loginResult,
-      redirectUrl: this.configService.frontendUrl,
+      redirectUrl: this.configService.DashboardUrl,
       user: user.toObject(),
     };
   }
