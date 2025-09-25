@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Req,
+  Res,
   UseGuards,
   Post,
   Body,
@@ -9,10 +10,9 @@ import {
   HttpStatus,
   UnauthorizedException,
   Query,
-  Redirect,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService, LoginResult } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -75,16 +75,20 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  @Redirect()
-  async googleAuthCallback(@Req() req: Request & { user: User }) {
+  async googleAuthCallback(
+    @Req() req: Request & { user: User },
+    @Res() res: Response,
+  ) {
     const result = await this.authService.handleGoogleLogin(req.user);
     await this.aiService.handleUserLogin(result.user._id, result.access_token);
 
-    const redirectUrl = new URL(result.redirectUrl);
-    redirectUrl.searchParams.set('accessToken', result.access_token);
-    redirectUrl.searchParams.set('userId', result.user._id.toString());
+    res.cookie('jwt', result.access_token, {
+      httpOnly: true,
+      secure: this.configService.nodeEnv === 'production',
+      sameSite: 'strict',
+    });
 
-    return { url: redirectUrl.toString() };
+    res.redirect(result.redirectUrl);
   }
 
   @Get('verify-email')

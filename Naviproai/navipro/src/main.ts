@@ -5,6 +5,7 @@ import { ConfigService } from './config/config.service';
 
 import helmet from 'helmet';
 import compression from 'compression';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,6 +24,7 @@ async function bootstrap() {
     }),
   );
   app.use(compression());
+  app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   await app.listen(port);
