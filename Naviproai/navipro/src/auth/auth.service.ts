@@ -164,9 +164,13 @@ export class AuthService {
     }
 
     const loginResult = this.login(user.toObject());
+
+    // Always check isVerified for redirect
     return {
       ...loginResult,
-      redirectUrl: this.configService.DashboardUrl,
+      redirectUrl: user.isVerified
+        ? this.configService.DashboardUrl
+        : `${this.configService.frontendUrl}`,
       user: user.toObject(),
     };
   }
