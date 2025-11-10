@@ -88,8 +88,9 @@ export class AuthController {
       secure: this.configService.nodeEnv === 'production',
       sameSite: 'strict',
     });
-
-    res.redirect(result.redirectUrl);
+    const redirectWithId = `${result.redirectUrl}?user_id = ${encodeURIComponent(result.user._id)}`;
+    return res.redirect(redirectWithId);
+    // res.redirect(result.redirectUrl);
   }
 
   @Get('verify-email')

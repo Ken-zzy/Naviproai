@@ -1,0 +1,683 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+		"name": "NaviProAI API",
+		"description": "Postman collection for the NaviProAI backend API. This collection covers all major features including Authentication, AI-powered Roadmap Generation, Chat, Task Management, Streaks, and Notifications.\n\n**Setup:**\n1. Import this collection into Postman.\n2. The `baseUrl` variable is pre-configured for the production environment. You can change it in the collection's 'Variables' tab if you are running locally.\n3. Run the **Authentication > Login User** request with valid credentials for a verified user. This will automatically save the JWT to the `jwt_token` collection variable.\n4. All other protected requests will automatically use this token for authentication.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "0"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"description": "Endpoints for user registration, login, and verification.",
+			"item": [
+				{
+					"name": "Register New User",
+					"id": "e1a4f5b6-7c8d-4e9f-a1b2-c3d4e5f6a7b8",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response should contain a success message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.eql(\"Registration successful. Please check your email to verify your account.\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"testuser+[{$randomInt}]@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Registers a new user. A verification email will be sent to the provided email address. The email includes a token needed for the `Verify Email` endpoint.\n\nNote: `[{$randomInt}]` is used to generate a unique email for each registration attempt."
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"id": "f2b5g6c7-8d9e-5g0h-b2c3-d4e5f6a7b8c9",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response should contain an access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"access_token\");",
+									"    pm.expect(jsonData.access_token).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Set JWT as collection variable\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.access_token) {",
+									"        pm.collectionVariables.set(\"jwt_token\", jsonData.access_token);",
+									"        console.log(\"JWT Token set successfully.\")",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"verifieduser@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Logs in a **verified** user and returns a JWT `access_token`. \n\nThe tests for this request will automatically save the token to the `jwt_token` collection variable, which is used by all other protected endpoints."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Email",
+					"id": "a3c6h7d8-9e0f-6h1i-c3d4-e5f6a7b8c9d0",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response should contain a success message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.eql(\"Email verified successfully\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/verify-email?token=YOUR_VERIFICATION_TOKEN",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"verify-email"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "YOUR_VERIFICATION_TOKEN",
+									"description": "The token received in the user's verification email."
+								}
+							]
+						},
+						"description": "Verifies a user's email address using the token sent to them upon registration. You must replace `YOUR_VERIFICATION_TOKEN` with a valid token."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AI",
+			"description": "Endpoints for interacting with the Navi AI assistant.",
+			"item": [
+				{
+					"name": "Generate Roadmap",
+					"id": "b4d7i8e9-0f1g-7i2j-d4e5-f6a7b8c9d0e1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response should be a valid roadmap object\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('months');",
+									"    pm.expect(jsonData.months).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"targetRole\": \"Senior Backend Engineer\",\n    \"currentLevel\": \"Junior Developer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ai/generate-roadmap",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ai",
+								"generate-roadmap"
+							]
+						},
+						"description": "Generates a personalized learning roadmap based on the user's desired role and current skill level. This will create or update the roadmap associated with the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Chat with Navi",
+					"id": "c5e8j9f0-1g2h-8j3k-e5f6-a7b8c9d0e1f2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response should contain a reply\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    // The AI response shape might vary, check for common properties.",
+									"    const hasReply = jsonData.hasOwnProperty('reply') || jsonData.hasOwnProperty('text') || jsonData.hasOwnProperty('content');",
+									"    pm.expect(hasReply).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What is the best way to learn about microservices?\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ai/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ai",
+								"chat"
+							]
+						},
+						"description": "Sends a message to the Navi AI assistant and gets a contextual response based on the user's progress and goals. The conversation history is maintained on the backend."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Roadmap & Tasks",
+			"description": "Endpoints for managing and interacting with the user's learning roadmap and daily tasks.",
+			"item": [
+				{
+					"name": "Get Daily Task",
+					"id": "d6f9k0g1-2h3i-9k4l-f6a7-b8c9d0e1f2g3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response should be a task object or null\", function () {",
+									"    try {",
+									"        var jsonData = pm.response.json();",
+									"        if (jsonData) {",
+									"            pm.expect(jsonData).to.have.property('task_id');",
+									"            pm.expect(jsonData).to.have.property('title');",
+									"            pm.expect(jsonData.completed).to.be.false;",
+									"        }",
+									"    } catch (e) {",
+									"        // Handle empty response body for the 'null' case",
+									"        pm.expect(pm.response.text()).to.be.empty;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/roadmap/daily-task",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"roadmap",
+								"daily-task"
+							]
+						},
+						"description": "Retrieves the next uncompleted daily task from the user's roadmap. Returns the task object or `null` if all tasks are completed or no roadmap exists."
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Task",
+					"id": "e7g0l1h2-3i4j-0l5m-a7b8-c9d0e1f2g3h4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response should be the updated roadmap\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('months');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/roadmap/complete-task/:taskId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"roadmap",
+								"complete-task",
+								":taskId"
+							],
+							"variable": [
+								{
+									"key": "taskId",
+									"value": "example-task-id",
+									"description": "The ID of the task to mark as complete. Get this from the 'Get Daily Task' endpoint."
+								}
+							]
+						},
+						"description": "Marks a specific task as complete. This will update the user's progress and also trigger a streak update."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Streaks",
+			"description": "Endpoints for managing and viewing user learning streaks.",
+			"item": [
+				{
+					"name": "Get My Streak",
+					"id": "f8h1m2i3-4j5k-1m6n-b8c9-d0e1f2g3h4i5",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains streak data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('currentStreak');",
+									"    pm.expect(jsonData).to.have.property('longestStreak');",
+									"    pm.expect(jsonData).to.have.property('streakType');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/streak",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"streak"
+							]
+						},
+						"description": "Retrieves the user's current and longest learning streaks, as well as their configured streak type."
+					},
+					"response": []
+				},
+				{
+					"name": "Set Streak Type",
+					"id": "g9i2n3j4-5k6l-2n7o-c9d0-e1f2g3h4i5j6",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response confirms the new streak type\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestBody = JSON.parse(pm.request.body.raw);",
+									"    pm.expect(jsonData.streakType).to.eql(requestBody.streakType);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"streakType\": \"WEEKLY\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/streaks/type",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"streaks",
+								"type"
+							]
+						},
+						"description": "Sets the user's preferred streak type. Can be `DAILY` or `WEEKLY`. Setting a new type will reset the current streak count to 0."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"description": "Endpoints for managing user notifications, such as reminders and achievements.",
+			"item": [
+				{
+					"name": "Get My Notifications",
+					"id": "h0j3o4k5-6l7m-3o8p-d0e1-f2g3h4i5j6k7",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response should be an array of notifications\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('message');",
+									"        pm.expect(jsonData[0]).to.have.property('read');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications"
+							]
+						},
+						"description": "Retrieves all notifications for the authenticated user, sorted by most recent."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification as Read",
+					"id": "i1k4p5l6-7m8n-4p9q-e1f2-g3h4i5j6k7l8",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/:notificationId/read",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								":notificationId",
+								"read"
+							],
+							"variable": [
+								{
+									"key": "notificationId",
+									"value": "example-notification-id",
+									"description": "The ID of the notification to mark as read. Get this from the 'Get My Notifications' endpoint."
+								}
+							]
+						},
+						"description": "Marks a single notification as read."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark All Notifications as Read",
+					"id": "j2l5q6m7-8n9o-5q0r-f2g3-h4i5j6k7l8m9",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/read-all",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"read-all"
+							]
+						},
+						"description": "Marks all of the user's unread notifications as read."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://naviproai-1.onrender.com",
+			"description": "The base URL for the NaviProAI API. Change this if you are running the API locally (e.g., http://localhost:3000)."
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"description": "This variable is automatically populated by the test script in the 'Login User' request."
+		}
+	]
+}

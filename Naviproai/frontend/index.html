@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaviProAI Auth Tester</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 2em; background-color: #f4f4f9; color: #333; }
+        h1, h2 { color: #444; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { display: block; width: calc(100% - 24px); padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        button, .button-link { display: inline-block; text-decoration: none; text-align: center; padding: 10px 15px; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover, .button-link:hover { background-color: #0056b3; }
+        .google-btn { background-color: #4285F4; }
+        .google-btn:hover { background-color: #357ae8; }
+        pre { background-color: #2d2d2d; color: #f1f1f1; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+
+    <h1>NaviProAI Backend Auth Tester</h1>
+
+    <div class="container">
+        <h2>1. Register a new user</h2>
+        <input type="text" id="reg-name" placeholder="Name (e.g., John Doe)">
+        <input type="email" id="reg-email" placeholder="Email (e.g., test@example.com)">
+        <input type="password" id="reg-password" placeholder="Password (min 6 characters)">
+        <button id="register-btn">Register</button>
+    </div>
+
+    <div class="container">
+        <h2>2. Resend Verification Email</h2>
+        <input type="email" id="resend-email" placeholder="Email of unverified user">
+        <button id="resend-btn">Resend Link</button>
+    </div>
+
+    <div class="container">
+        <h2>3. Login with Email</h2>
+        <p><em>Note: You must verify your email before logging in.</em></p>
+        <input type="email" id="login-email" placeholder="Email">
+        <input type="password" id="login-password" placeholder="Password">
+        <button id="login-btn">Login</button>
+    </div>
+
+    <div class="container">
+        <h2>4. Login with Google</h2>
+        <p>
+            Click the link below to log in with Google. You will be redirected to a new page showing your access token.
+            <strong>Manually copy that token and paste it into the "Your JWT" field below.</strong>
+        </p>
+        <a id="google-login-btn" class="button-link google-btn" href="#" target="_blank">Login with Google</a>
+    </div>
+
+    <div class="container">
+        <h2>5. Test Authenticated Routes</h2>
+        <label for="jwt-token-input">Your JWT:</label>
+        <input type="text" id="jwt-token-input" placeholder="Login to get a token, or paste one here.">
+        <hr style="margin: 20px 0;">
+
+        <h3>Get User Profile</h3>
+        <button id="profile-btn">Get My Profile</button>
+
+        <h3 style="margin-top: 20px;">AI: Generate Roadmap</h3>
+        <input type="text" id="ai-target-role" placeholder="Target Role (e.g., Senior Backend Engineer)">
+        <input type="text" id="ai-current-level" placeholder="Current Level (e.g., Junior)">
+        <input type="text" id="ai-goal" placeholder="Goal (e.g., Become a Senior Developer)">
+        <input type="text" id="ai-timeframe" placeholder="Timeframe (e.g., 3 months)">
+        <button id="roadmap-btn">Generate Roadmap</button>
+
+        <h3 style="margin-top: 20px;">AI: Chat</h3>
+        <input type="text" id="ai-chat-message" placeholder="Your message to the AI...">
+        <button id="chat-btn">Send Message</button>
+
+        <h3 style="margin-top: 20px;">AI: Health Check</h3>
+        <button id="health-btn">Check AI Agent Health</button>
+
+        <h3 style="margin-top: 20px;">Other Features</h3>
+        <button id="notifications-btn">Get Notifications</button>
+        <button id="streak-btn" style="margin-left: 10px;">Get Streak</button>
+        <button id="progress-btn" style="margin-left: 10px;">Get Progress</button>
+    </div>
+
+    <div class="container">
+        <h2>API Response Log</h2>
+        <pre id="log-output">Waiting for actions...</pre>
+    </div>
+
+    <script>
+        // IMPORTANT: This should be your Render backend URL or localhost
+        const API_BASE_URL = 'https://naviproai-1.onrender.com';
+
+        // Setup Google Login Link
+        document.getElementById('google-login-btn').href = `${API_BASE_URL}/auth/google`;
+
+        const regNameInput = document.getElementById('reg-name');
+        const regEmailInput = document.getElementById('reg-email');
+        const regPasswordInput = document.getElementById('reg-password');
+        const registerBtn = document.getElementById('register-btn');
+
+        const resendEmailInput = document.getElementById('resend-email');
+        const resendBtn = document.getElementById('resend-btn');
+
+        const loginEmailInput = document.getElementById('login-email');
+        const loginPasswordInput = document.getElementById('login-password');
+        const loginBtn = document.getElementById('login-btn');
+
+        const jwtTokenInput = document.getElementById('jwt-token-input');
+        const profileBtn = document.getElementById('profile-btn');
+
+        const aiTargetRoleInput = document.getElementById('ai-target-role');
+        const aiCurrentLevelInput = document.getElementById('ai-current-level');
+        const roadmapBtn = document.getElementById('roadmap-btn');
+
+        const aiGoalInput = document.getElementById('ai-goal');
+        const aiTimeframeInput = document.getElementById('ai-timeframe');
+
+        const aiChatMessageInput = document.getElementById('ai-chat-message');
+        const chatBtn = document.getElementById('chat-btn');
+
+        const healthBtn = document.getElementById('health-btn');
+
+        const notificationsBtn = document.getElementById('notifications-btn');
+        const streakBtn = document.getElementById('streak-btn');
+        const progressBtn = document.getElementById('progress-btn');
+
+        const logOutput = document.getElementById('log-output');
+
+        function log(data) {
+            logOutput.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function apiCall(endpoint, method, body, headers = {}) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...headers,
+                    },
+                    body: body ? JSON.stringify(body) : null,
+                });
+
+                const responseData = await response.json();
+                log({ status: response.status, statusText: response.statusText, data: responseData });
+                return responseData;
+            } catch (error) {
+                log({ error: 'Failed to fetch. Check browser console and ensure backend is running. CORS issues?', message: error.message });
+                console.error('API Call Error:', error);
+            }
+        }
+
+        registerBtn.addEventListener('click', async () => {
+            log('Registering...');
+            const body = {
+                name: regNameInput.value,
+                email: regEmailInput.value,
+                password: regPasswordInput.value
+            };
+            await apiCall('/auth/register', 'POST', body);
+        });
+
+        resendBtn.addEventListener('click', async () => {
+            log('Requesting new verification link...');
+            const body = { email: resendEmailInput.value };
+            await apiCall('/auth/resend-verification', 'POST', body);
+        });
+
+        loginBtn.addEventListener('click', async () => {
+            log('Logging in...');
+            const body = { email: loginEmailInput.value, password: loginPasswordInput.value };
+            const data = await apiCall('/auth/login', 'POST', body);
+
+            if (data && data.access_token) {
+                jwtTokenInput.value = data.access_token;
+            } else {
+                jwtTokenInput.value = '';
+            }
+        });
+
+        profileBtn.addEventListener('click', async () => {
+            const jwtToken = jwtTokenInput.value;
+            if (!jwtToken) { return log({ error: 'You must have a JWT in the input field.' }); }
+            log('Fetching profile...');
+            await apiCall('/user/me', 'GET', null, { 'Authorization': `Bearer ${jwtToken}` });
+        });
+
+        roadmapBtn.addEventListener('click', async () => {
+            log('Generating roadmap...');
+            const aiGoalInput = document.getElementById('ai-goal');
+            const aiTimeframeInput = document.getElementById('ai-timeframe');
+
+            const body = {
+                targetRole: aiTargetRoleInput.value,
+                currentLevel: aiCurrentLevelInput.value,
+                goal: aiGoalInput.value,
+                timeframe: aiTimeframeInput.value
+            };
+
+            const jwtToken = jwtTokenInput.value;
+            if (!jwtToken) { return log({ error: 'You must have a JWT in the input field.' }); }
+
+            await apiCall('/ai/generate-roadmap', 'POST', body, { 'Authorization': `Bearer ${jwtToken}` });
+        });
+
+        chatBtn.addEventListener('click', async () => {
+            const jwtToken = jwtTokenInput.value;
+            if (!jwtToken) { return log({ error: 'You must have a JWT in the input field.' }); }
+            log('Sending chat message...');
+            const body = { message: aiChatMessageInput.value };
+            await apiCall('/ai/chat', 'POST', body, { 'Authorization': `Bearer ${jwtToken}` });
+        });
+
+        healthBtn.addEventListener('click', async () => {
+            log('Checking AI agent health...');
+            await apiCall('/ai/health', 'GET');
+        });
+
+        notificationsBtn.addEventListener('click', async () => {
+            const jwtToken = jwtTokenInput.value;
+            if (!jwtToken) { return log({ error: 'You must have a JWT in the input field.' }); }
+            log('Fetching notifications...');
+            await apiCall('/notifications', 'GET', null, { 'Authorization': `Bearer ${jwtToken}` });
+        });
+
+        streakBtn.addEventListener('click', async () => {
+            const jwtToken = jwtTokenInput.value;
+            if (!jwtToken) { return log({ error: 'You must have a JWT in the input field.' }); }
+            log('Fetching streak...');
+            await apiCall('/streak', 'GET', null, { 'Authorization': `Bearer ${jwtToken}` });
+        });
+
+        progressBtn.addEventListener('click', async () => {
+            const jwtToken = jwtTokenInput.value;
+            if (!jwtToken) { return log({ error: 'You must have a JWT in the input field.' }); }
+            log('Fetching progress...');
+            await apiCall('/progress', 'GET', null, { 'Authorization': `Bearer ${jwtToken}` });
+        });
+    </script>
+
+</body>
+</html>
