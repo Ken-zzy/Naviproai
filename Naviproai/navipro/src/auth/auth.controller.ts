@@ -83,14 +83,16 @@ export class AuthController {
     const result = await this.authService.handleGoogleLogin(req.user);
     await this.aiService.handleUserLogin(result.user._id, result.access_token);
 
+    // set cookie (keep token httpOnly)
     res.cookie('jwt', result.access_token, {
       httpOnly: true,
       secure: this.configService.nodeEnv === 'production',
-      sameSite: 'strict',
+      sameSite: 'strict', // <- consider sameSite/secure domain settings for cross-site redirects
     });
-    const redirectWithId = `${result.redirectUrl}?user_id = ${encodeURIComponent(result.user._id)}`;
+
+    // append user id so frontend can persist it
+    const redirectWithId = `${result.redirectUrl}?user_id=${encodeURIComponent(result.user._id)}`;
     return res.redirect(redirectWithId);
-    // res.redirect(result.redirectUrl);
   }
 
   @Get('verify-email')
